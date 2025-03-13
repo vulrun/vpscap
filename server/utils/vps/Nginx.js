@@ -213,8 +213,9 @@ export default class NginxHandler {
     const server443 = {};
     if (obj?.enableSSL) {
       let sslCert = await this.webSites.findOneCert(obj?.domain);
+      console.log("🚀 ~ NginxHandler ~ writeConf ~ sslCert:", sslCert);
       // try to install ssl certificate
-      if (!sslCert || sslCert?.isExpired) {
+      if (!sslCert) {
         await this.webSites.installCert(obj?.domain);
         sslCert = await this.webSites.findOneCert(obj?.domain);
       }

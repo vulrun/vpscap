@@ -193,7 +193,7 @@ export default class WebSites {
       args.confPath = `${this.#confDirPath}/${this.#generateFilename(args?.domain)}${args?.isDumped ? ".dump" : ".conf"}`;
     }
 
-    if (!process?.env?.APP_ENV.startsWith("dev")) {
+    if (!process?.env?.APP_ENV?.startsWith("dev")) {
       const dnsData = await this.#dnsIpLookup(args?.domain);
       if (!dnsData?.status) throw new Error(`DNS A record for [${args?.domain}] must be pointed to ${dnsData?.vpsIp}`);
     }
@@ -272,7 +272,7 @@ export default class WebSites {
   // =========== certificate methods ===========   //
 
   async installCert(domain) {
-    if (process?.env?.APP_ENV.startsWith("dev")) {
+    if (process?.env?.APP_ENV?.startsWith("dev")) {
       console.log(`🗿 Skipping, certificate installation on development server is not possible`);
       return;
     }
@@ -304,19 +304,18 @@ export default class WebSites {
       target: site?.target,
     });
   }
-  async findCert(sites) {
+  async findCert(domain) {
     try {
       const installed = await this.sslAcme.listCertificates();
 
-      return this.#filterCerts(this.#unwindCerts(installed), sites);
+      return this.#filterCerts(this.#unwindCerts(installed), domain);
     } catch (error) {
       console.error("~ findCert:", error);
       return [];
     }
   }
-  async findOneCert(sites) {
-    const certs = await this.findCert(sites);
-
+  async findOneCert(domain) {
+    const certs = await this.findCert(domain);
     return [].concat(certs)?.[0];
   }
   async findSslDomains() {
@@ -329,8 +328,8 @@ export default class WebSites {
       .sort()
       .value();
   }
-  async listSslMappings(sites) {
-    const result = await this.findCert(sites);
+  async listSslMappings(domain) {
+    const result = await this.findCert(domain);
     return Object.fromEntries(result.map((c) => [c.domain, c.subject]));
   }
   getCertDirPaths() {
@@ -340,10 +339,13 @@ export default class WebSites {
   async renewOutdatedCerts() {}
 
   // ====================== Private Cert Methods ====================== //
-  #filterCerts(certs, sites) {
-    if (!lo.isArray(sites) || lo.isEmpty(sites)) return certs;
+  #filterCerts(certs, domain) {
+    domain = this.nginx.sanitizeDomains(domain);
+    if (!lo.isArray(domain) || lo.isEmpty(domain)) {
+      return lo.filter(certs, (c) => !c?.isExpired);
+    }
 
-    return lo.filter(certs, (c) => sites.includes(c.domain));
+    return lo.filter(certs, (c) => !c?.isExpired && domain.includes(c?.domain));
   }
 
   #unwindCerts(certs) {
