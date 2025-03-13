@@ -1,0 +1,51 @@
+name: Prepare Nuxt App Build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout latest code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: |
+          npm install
+
+      - name: Build Nuxt App
+        run: |
+          npm run build
+
+      - name: Specifying github user and email
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+      - name: Checkout dist branch
+        run: |
+          # Checkout to dist branch or create a new one if it doesn't exist
+          git checkout -b dist || git checkout --orphan dist
+          git fetch --all && git reset --hard origin/main
+
+      - name: Include .output and commit changes
+        run: |
+          # Force add the .output folder even if it's in .gitignore
+          git add -f .output
+
+          # Commit changes to the dist branch
+          git commit -m "Deploy build to dist branch"
+
+      - name: Push to dist branch
+        run: |
+          # Push the changes to the dist branch
+          git push --force --set-upstream origin dist

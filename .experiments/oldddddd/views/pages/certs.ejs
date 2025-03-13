@@ -1,0 +1,115 @@
+<%- contentFor('headerButtons') %>
+<div class="ms-auto hstack"></div>
+
+<%- contentFor('body') %>
+<div class="mx-0 my-3">
+  <div class="mb-3 flex flex-wrap">
+    <form class="w-full" method="POST" action="/certs">
+      <input type="hidden" name="action" value="install_ssl" />
+      <div class="hstack space-x-2">
+        <input type="text" :class="classNames(form_field, 'px-3 h-10 font-mono')" name="domain" placeholder="example.com www.example.com google.com app.google.com" />
+        <button type="submit" :class="classNames(btn_dark, 'px-3 h-10 bg-cyan-800')">install ssl</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="p-4 my-6 bg-white rounded shadow">
+    <table data-ajax="?format=json">
+      <thead>
+        <tr>
+          <th aria-label="">domain</th>
+          <th aria-label="">domains</th>
+          <th aria-label="">certificate</th>
+          <th aria-label="">expiry</th>
+          <th aria-label="action"></th>
+        </tr>
+      </thead>
+    </table>
+  </div>
+</div>
+
+<script>
+  const btn_outline = `flex items-center justify-center grow shrink-0 rounded shadow trackingwide text-sm font-normal border text-gray-500 border-gray-500 hover:bg-gray-500 hover:bg-gray-500 hover:text-white focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-gray-50 focus:outline-none cursor-pointer`;
+
+  jQuery(document).ready(function ($) {
+    window.searchParams = Object.fromEntries(new URLSearchParams(window.location.search).entries());
+    $("input[name=domain]").val(hex2a(searchParams?.domains));
+    changeHref(window.location.origin + window.location.pathname);
+
+    // load the data asynchronously
+    let tableAjax = $("table").attr("data-ajax") || "";
+    if (/^\?/.test(tableAjax)) tableAjax = window.location.href + tableAjax;
+
+    $("table").DataTable({
+      ajax: tableAjax,
+      order: [[0, "asc"]],
+      stateSave: true,
+      lengthMenu: [
+        [25, 50, 100, -1],
+        [25, 50, 100, "All"],
+      ],
+      columns: [
+        //
+        renderFor("domain"),
+        renderFor("domains"),
+        renderFor("certificate", "certificate_path"),
+        renderFor("expiry_date"),
+        renderFor("actions", "domain"),
+      ],
+    });
+  });
+
+  function renderFor(slug, prop) {
+    return {
+      data: prop || slug,
+      render: function (data, type, row, meta) {
+        if (type === "sort") {
+          if (row?.serial_number === "---") data = "z____" + data;
+          return data;
+        } else if (type === "display") {
+          switch (slug) {
+            case "domain":
+              data = `<span class="text-sm opacity-75" title="${data}">${data}</span>`;
+              break;
+
+            case "domains":
+              data = `<span class="font-mono" title="${data}">${strTruncate(data, 40)}</span>`;
+              break;
+
+            case "certificate":
+              data = `<code title="${data}">${strTruncate(data, 20)}</code>`;
+              break;
+
+            case "actions":
+              data = `
+              <form method="POST" action="/certs">
+                  ${
+                    row?.serial_number === "---"
+                      ? //
+                        `<input type="hidden" name="domain" value="${row?.domain}"/><button class="${btn_outline} px-3 h-8 text-green-700 border-green-700 hover:bg-green-700" name="action" value="install_ssl">install ssl</button>`
+                      : //
+                        `<input type="hidden" name="domain" value="${row?.certificate_name}"/><button class="${btn_outline} px-3 h-8 text-red-700 border-red-700 hover:bg-red-700" name="action" value="delete_ssl">delete ssl</button>`
+                  }
+              </form>`;
+
+              break;
+
+            default:
+              break;
+          }
+        }
+
+        return data;
+      },
+    };
+  }
+
+  function hex2a(hex) {
+    hex = String(hex || "");
+    let str = "";
+    for (let i = 0; i < hex.length; i += 2) {
+      str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+    }
+    return str;
+  }
+</script>

@@ -1,0 +1,112 @@
+<%- contentFor('headerButtons') %>
+<div class="ml-auto hstack">
+  <% if(props.pending_update_count) { %><span><%- props.pending_update_count %> pending updates</span><% } %>
+  <a :class="classNames(btn_dark, 'h-8 px-3 text-sm font-normal bg-sky-600')" title="Add Site" href="/sites/add">Add Site</a>
+  <form class="ms-2" method="post" action="/sites">
+    <input type="hidden" name="action" value="rebuild_sites" />
+    <button :class="classNames(btn_dark, 'h-8 px-3 text-sm font-normal bg-purple-900')" title="Rebuild All">Rebuild All</button>
+  </form>
+  <form class="ms-2" method="post" action="/sites">
+    <input type="hidden" name="action" value="restart_nginx" />
+    <button :class="classNames(btn_dark, 'h-8 px-3 text-sm font-normal bg-cyan-800')" title="Restart NGINX">Restart NGINX</button>
+  </form>
+</div>
+
+<%- contentFor('body') %>
+<div class="my-6 p-4 bg-white rounded shadow text-sm">
+  <table class="table-auto" data-ajax="?format=json">
+    <thead>
+      <tr>
+        <th aria-label="">file</th>
+        <th aria-label="">sites</th>
+        <th aria-label="">target</th>
+        <th aria-label="action" class="text-center"></th>
+      </tr>
+    </thead>
+  </table>
+</div>
+
+<script>
+  const btn_outline = `flex items-center justify-center grow shrink-0 rounded shadow trackingwide text-sm font-normal border text-gray-500 border-gray-500 hover:bg-gray-500 hover:bg-gray-500 hover:text-white focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-gray-50 focus:outline-none cursor-pointer`;
+  const actions = {
+    disable: (id) => `<button class="${btn_outline} px-3 h-8" name="action" value="disable_site">disable</button>`,
+    enable: (id) => `<button class="${btn_outline} px-3 h-8 text-sky-700 border-sky-700 hover:bg-sky-700" name="action" value="enable_site">enable</button>`,
+    delete: (id) => `<button class="${btn_outline} px-3 h-8 text-red-700 border-red-700 hover:bg-red-700" name="action" value="delete_site">delete</button>`,
+    install: (href) => `<a class="${btn_outline} px-3 h-8 text-green-700 border-green-700 hover:bg-green-700" href="${href}">ssl</a>`,
+    edit: (id) => `<a class="${btn_outline} px-3 h-8 text-sky-700 border-sky-700 hover:bg-sky-700" href="/sites/${id}">edit</a>`,
+  };
+
+  jQuery(document).ready(function ($) {
+    let tableAjax = $("table").attr("data-ajax") || "";
+    if (/^\?/.test(tableAjax)) tableAjax = window.location.href + tableAjax;
+
+    $("table").DataTable({
+      ajax: tableAjax || null,
+      order: [[2, "asc"]],
+      stateSave: true,
+      lengthMenu: [
+        [25, 50, 100, -1],
+        [25, 50, 100, "All"],
+      ],
+      columns: [
+        //
+        renderFor("file"),
+        renderFor("sites"),
+        renderFor("target"),
+        renderFor("actions", "_hex"),
+      ],
+    });
+  });
+
+  function renderFor(slug, prop) {
+    return {
+      data: prop || slug,
+      render: function (data, type, full, meta) {
+        if (type === "display") {
+          const { _hex, isActive, certs, sslCert, sitex } = full;
+          switch (slug) {
+            case "file":
+              data = `<span class="opacity-80" title="${data}">${data}</span>`;
+              break;
+
+            case "sites":
+              data = full?.sites.map((site) => _domainLink(site, isActive, certs, sslCert)).join(`<span class="mx-1 text-gray-300">-</span>`);
+              break;
+
+            case "target":
+              data = `<code class="text-xs text-pink-700">${strTruncate(data, 50)}</code>`;
+              break;
+
+            case "actions":
+              data = `
+              <form method="POST" action="/sites">
+                <input type="hidden" name="id" value="${_hex}"/>
+                <div class="flex space-x-1 opacity-90">
+                  ${isActive ? actions.edit(_hex) + actions.disable(_hex) + actions.install(sitex) : actions.enable(_hex) + actions.delete(_hex)}
+                </div>
+              </form>`;
+              break;
+
+            default:
+              break;
+          }
+        }
+
+        return data;
+      },
+    };
+  }
+
+  function _domainLink(site, isActive, certs = {}, cert) {
+    if (!isActive) {
+      return `<span class="text-sm font-medium text-gray-400">${site}</span>`;
+    }
+    if (!certs[site]) {
+      return `<a href="http://${site}" target="_blank" class="text-sm font-medium text-sky-600">${site}</a>`;
+    }
+    if (certs[site] === cert) {
+      return `<a href="https://${site}" target="_blank" class="text-sm font-medium text-green-600">${site}</a>`;
+    }
+    return `<a href="https://${site}" target="_blank" class="text-sm font-medium text-yellow-600">${site}</a>`;
+  }
+</script>

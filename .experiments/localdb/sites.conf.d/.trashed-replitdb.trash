@@ -1,0 +1,15 @@
+###{"sites":["repl-db.appgo.in"],"target":"https://kv.replit.com/v0/eyJhbGciOiJIUzUxMiIsImlzcyI6ImNvbm1hbiIsImtpZCI6InByb2Q6MSIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJjb25tYW4iLCJleHAiOjE2Njk0NjM0NDEsImlhdCI6MTY2OTM1MTg0MSwiZGF0YWJhc2VfaWQiOiI2OWQyZGUwMC0yMGQ2LTQ5OWMtYTdlNy0zMmQ4YThjY2I2MzMiLCJ1c2VyIjoicGtncyIsInNsdWciOiJhdXRoIn0.UIM-3yf17rPjUDFxLJvQdx_wYmU_I37m3dfDGTlRWHUDB125_eXn2Z1pLvf0n9TaWVIPbmQq8CmqKTHzbIsCEQ","sslCert":null}###
+
+server {
+    listen         80;
+    listen         [::]:80;
+    server_name    repl-db.appgo.in;
+    error_page     404 /404.html;
+    error_page     500 502 503 504 /50x.html;
+    location / {
+        rewrite    ^(.*)$ https://kv.replit.com/v0/eyJhbGciOiJIUzUxMiIsImlzcyI6ImNvbm1hbiIsImtpZCI6InByb2Q6MSIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJjb25tYW4iLCJleHAiOjE2Njk0NjM0NDEsImlhdCI6MTY2OTM1MTg0MSwiZGF0YWJhc2VfaWQiOiI2OWQyZGUwMC0yMGQ2LTQ5OWMtYTdlNy0zMmQ4YThjY2I2MzMiLCJ1c2VyIjoicGtncyIsInNsdWciOiJhdXRoIn0.UIM-3yf17rPjUDFxLJvQdx_wYmU_I37m3dfDGTlRWHUDB125_eXn2Z1pLvf0n9TaWVIPbmQq8CmqKTHzbIsCEQ$1 redirect;
+    }
+
+}
+
+

@@ -1,0 +1,73 @@
+<div class="flex flex-col items-start justify-center space-y-10">
+  <div class="my-4 mx-auto w-full">
+    <div v-if="!deploy_edit.key" :class="classNames(card_main)">
+      <deploy-item v-for="itm of deploys" :key="itm.key" :itm="itm" :exec="deploy_exec"></deploy-item>
+    </div>
+
+    <div v-else :class="classNames(card_main)">
+      <h5 class="mb-4 font_mont font-bold text-sm text-cyan-800 tracking-wide uppercase">Edit Deploy: {{ deploy_edit.label ? `${deploy_edit.label} (${deploy_edit.key})` : deploy_edit.key }}</h5>
+      <form class="vstack space-y-4" @submit.prevent="saveDeploy">
+        <div class="my-3 vstack">
+          <label for="deployLabel" :class="classNames(form_label, '')">Deploy Label</label>
+          <input id="deployLabel" type="text" :class="classNames(form_field, 'px-3 h-10 font-mono')" v-model="deploy_edit.label" />
+        </div>
+        <div class="vstack">
+          <label for="deployCommands" :class="classNames(form_label, '')">Deploy Commands</label>
+          <textarea id="deployCommands" :class="classNames(form_field, 'min-h-96 p-4 bg-white shadow text-wrap break-words overflow-x-hidden overflow-y-auto font-mono text-sm resize-y')" v-model="deploy_edit.commands"></textarea>
+        </div>
+        <div class="hstack pt-4">
+          <div class="me-auto"></div>
+          <a :class="classNames(btn_dark, 'w-20 h-10 px-3 text-sm font-normal bg-gray-800')" v-html="icons['chevron-left'].toSvg({class: 'w-4 mr-1'}) + 'Back'" @click.prevent="editDeploy()"></a>
+          <button :class="classNames(btn_dark, 'w-20 h-10 px-3 text-sm font-normal bg-cyan-700 ml-2')" type="submit">SAVE</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div :class="classNames('fixed left-[18rem] right-0 pl-3 pr-0 bg-black shadow', deploy_exec.key ? 'bottom-0' : '-bottom-full')">
+    <a :class="classNames(btn_light, 'w-10 h-10 bg-slate-50 hover:bg-gray-200', 'absolute z-50 top-2 right-6')" v-html="icons['x'].toSvg({class: 'w-4'})" @click.prevent="deploy_exec.key = ''; deploy_exec.pid = ''"></a>
+    <div id="terminal" class="h-[30rem]"></div>
+  </div>
+</div>
+
+<script>
+  window.terminal = new VPS(socket);
+  window.terminal.attachTo("#terminal");
+
+  socket.on("connect", () => {
+    console.log("socket.io connected", socket.id);
+    window.terminal.startListening();
+  });
+
+  socket.on("disconnect", () => {
+    console.log("socket.io disconnected", socket?.id); // undefined
+  });
+</script>
+
+<%- contentFor('vueTemplates') %>
+<template id="deploy-item">
+  <div class="group/item relative flex items-center justify-between rounded-md p-4 hover:bg-slate-100 cursor-pointer">
+    <div class="flex mr-auto">
+      <div class="w-full leading-6">
+        <a href="#" class="font-medium text-lg text-slate-700">{{ itm.label }}</a>
+        <div
+          class="text-xs text-gray-400"
+          v-html="_seprateByBulls([
+          //
+          `executed ${_timeAgo(itm?.lastExecutedAt)}`,
+          `updated ${_timeAgo(itm?.lastUpdatedAt)}`,
+          itm?.commands
+        ], 60)"
+        ></div>
+      </div>
+    </div>
+    <div v-if="exec.pid" class="flex space-x-2">
+      <!-- <a class="group/edit relative flex items-center whitespace-nowrap rounded h-10 px-4 font-semibold text-sm text-blue-600 border border-blue-600 hover:bg-gray-200 opacity-90 transition" @click.prevent="editDeploy(itm)">CLEAR</a> -->
+      <a class="group/edit relative flex items-center whitespace-nowrap rounded h-10 px-4 font-semibold text-sm text-rose-500 border border-rose-600 transition hover:bg-gray-200 opacity-90 transition" @click.stop="stopDeploy(itm?.key)">STOP</a>
+    </div>
+    <template v-else>
+      <a class="group/edit relative flex items-center whitespace-nowrap rounded-md py-3 px-4 font-semibold text-sm text-gray-500 transition hover:bg-gray-200 opacity-10 group-hover/item:opacity-90" @click.prevent="editDeploy(itm)">EDIT</a>
+      <a class="group/edit relative flex items-center whitespace-nowrap rounded-md py-3 px-4 font-semibold text-sm text-gray-500 transition hover:bg-gray-200 opacity-10 group-hover/item:opacity-90" @click.stop="execDeploy(itm?.key)">RUN</a>
+    </template>
+  </div>
+</template>

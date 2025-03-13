@@ -1,0 +1,43 @@
+<div class="flex flex-wrap -m-2">
+  <div class="sm:w-1/2 w-full p-2">
+    <card heading="Server Overview">
+      <ul class="divide-y divide-gray-50 text-sm">
+        <% for(const k in props.server) { %>
+        <li class="py-2 flex items-center justify-between">
+          <i class="shrink-0 text-left"><%= k.replace(/\_/g, ' '); %></i>
+          <i class="line-clamp-1 text-right font-semibold opacity-90"><%= props.server[k]; %></i>
+        </li>
+        <% } %>
+      </ul>
+    </card>
+  </div>
+
+  <div class="sm:w-1/2 w-full p-2">
+    <card heading="System Information">
+      <ul class="divide-y divide-gray-50 text-sm">
+        <% for(const k in props.system) { %>
+        <li class="py-2 flex items-center justify-between">
+          <i class="shrink-0 text-left"><%= k.replace(/\_/g, ' '); %></i>
+          <i class="line-clamp-1 text-right font-semibold opacity-90"><%= props.system[k]; %></i>
+        </li>
+        <% } %>
+      </ul>
+    </card>
+  </div>
+
+  <% if(props.memory) { %>
+  <div class="w-full p-2">
+    <card heading="Physical Memory">
+      <pre class="text-sm"><%= props.memory.raw; %></pre>
+    </card>
+  </div>
+
+  <% } %> <% if(props.diskFiles) { %>
+  <div class="w-full p-2">
+    <card heading="Disk File System">
+      <pre class="text-sm"><%= props.diskFiles.raw; %></pre>
+    </card>
+  </div>
+
+  <% } %>
+</div>

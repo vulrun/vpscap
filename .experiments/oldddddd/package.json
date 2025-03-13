@@ -1,0 +1,33 @@
+{
+  "name": "vpscap",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon --ext js,mjs,json,ejs,css index.js ",
+    "deploy": "pm2 start index.js --name vpscap",
+    "reload": "pm2 reload vpscap && pm2 log vpscap"
+  },
+  "author": "reach@mohit.one",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.6.5",
+    "cookie-parser": "^1.4.6",
+    "deta": "^2.0.0",
+    "dotenv": "^16.3.1",
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
+    "express-ejs-layouts": "^2.5.1",
+    "jsonwebtoken": "^9.0.2",
+    "jstub": "^0.0.8",
+    "lodash": "^4.17.21",
+    "lru-cache": "^10.1.0",
+    "morgan": "^1.10.0",
+    "node-pty": "^1.0.0",
+    "shelljs": "^0.8.5",
+    "socket.io": "^4.7.4",
+    "tree-kill": "^1.2.2",
+    "ws": "^8.16.0"
+  }
+}
