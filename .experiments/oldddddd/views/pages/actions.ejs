@@ -1,0 +1,34 @@
+<action-div></action-div>
+
+<div class="flex items-start justify-between space-x-10">
+  <div class="mx-auto w-1/2 bg-white p-4 shadow rounded-md">
+    <action-item v-for="itm of actions" :key="itm.key" :itm="itm"></action-item>
+  </div>
+
+  <pre class="w-1/2 min-h-[40rem] max-h-[40rem] p-2 bg-white shadow text-wrap break-words overflow-x-hidden overflow-y-auto font-mono text-sm" :class="is_action_reponse_errored ? 'text-red-700' : ''" v-html="action_response"></pre>
+</div>
+
+<%- contentFor('vueTemplates') %>
+<template id="action-div"> </template>
+
+<template id="action-item">
+  <div class="group/item relative flex items-center justify-between rounded-md p-4 hover:bg-slate-100">
+    <div class="flex">
+      <div class="w-full leading-6">
+        <a href="#" class="font-medium text-lg text-slate-700">{{ itm.label }}</a>
+        <div class="text-xs text-gray-400">
+          <i>executed {{ _timeAgo(itm?.lastClickedAt) }}</i>
+          <i v-if="itm?.brief" class="px-2">&bull;</i>
+          <i v-if="itm?.brief">{{ itm.brief }}</i>
+        </div>
+      </div>
+    </div>
+
+    <a href="#" class="group/edit relative flex items-center whitespace-nowrap rounded-md py-3 pl-4 pr-3 text-sm text-gray-500 transition hover:bg-gray-200 opacity-10 group-hover/item:opacity-90" @click.prevent="onActionClick(itm)">
+      <span class="font-semibold transition text-gray-700" :style="{color: itm.color}">RUN</span>
+      <svg class="mt-px h-5 w-5 text-gray-400 transition group-hover/edit:translate-x-0.5 group-hover/edit:text-gray-700" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+      </svg>
+    </a>
+  </div>
+</template>

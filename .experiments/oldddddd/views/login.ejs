@@ -1,0 +1,26 @@
+<div class="w-full h-screen flex flex-col justify-center items-center bg-gray-700">
+  <div class="w-full max-w-xs flex flex-col p-5 bg-gray-50 rounded shadow">
+    <div class="mb-3 vstack">
+      <h2 class="mx-auto my-0 font-bold text-4xl text-cyan-800">vps</h2>
+      <span class="mx-auto my-1 text-gray-600">login into vps admin</span>
+    </div>
+
+    <form autocomplete="off" method="POST" action="/login">
+      <div class="my-3 vstack">
+        <label for="username" :class="classNames(form_label, '')">Username</label>
+        <input id="username" type="text" :class="classNames(form_field, 'px-3 h-10 font-mono')" name="username" autofocus="true" />
+      </div>
+      <div class="my-3 vstack">
+        <label for="username" :class="classNames(form_label, '')">Password</label>
+        <input id="username" type="password" :class="classNames(form_field, 'px-3 h-10 font-mono')" name="password" />
+      </div>
+      <div class="my-3 vstack">
+        <label class="hstack cursor-pointer">
+          <input type="checkbox" class="mr-2 w-4 h-4" onchange="document.querySelector('#submit').disabled = !this.checked;" checked="true" />
+          I agree to <a class="ml-1 text-blue-800">terms and policies</a>.
+        </label>
+      </div>
+      <button :class="classNames(btn_dark, 'w-full h-10 px-3 mt-6 text-sm font-normal bg-cyan-700')" type="submit">submit</button>
+    </form>
+  </div>
+</div>

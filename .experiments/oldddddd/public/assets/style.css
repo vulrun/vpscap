@@ -1,0 +1,317 @@
+* {
+  box-sizing: border-box;
+}
+
+*,
+*:before,
+*:after {
+  transition: 0.1s;
+  outline: none !important;
+}
+
+body {
+  /* font-size: 16px; */
+  /* overflow-x: hidden; */
+  /* overflow-y: scroll; */
+}
+template {
+  display: none;
+}
+i {
+  font-style: normal;
+}
+.hstack {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  /* align-self: stretch; */
+}
+.vstack {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-self: stretch;
+}
+.offscreen {
+  position: absolute;
+  left: -999999999px;
+  top: -9999999999px;
+  z-index: 100000000;
+}
+.grad1 {
+  background: linear-gradient(90deg, #fbf3f1 0%, #fff7ed 100%);
+}
+.grad2 {
+  background: linear-gradient(180deg, #eef6f5 33%, #fff7ed 99%);
+}
+
+[data-before]:before {
+  content: attr(data-before);
+}
+[data-after]:after {
+  content: attr(data-after);
+}
+:disabled,
+.disabled,
+[disabled] {
+  /* opacity: 0.2; */
+  filter: grayscale(0.6) opacity(0.6);
+  pointer-events: none;
+}
+
+.hover_dark:hover {
+  box-shadow: inset 0 0 0 2rem rgba(0, 0, 0, 0.2);
+}
+
+.font_mont {
+  font-family: "Montserrat";
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 200ms;
+}
+.fade-enter,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.due-list-enter,
+.due-list-leave-to {
+  opacity: 0;
+  transform: translateY(30px);
+}
+.due-list-leave-active {
+  position: absolute;
+  left: 0;
+  right: 0;
+}
+.due-item {
+  transition: transform 400ms, opacity 200ms;
+}
+
+.modal {
+  opacity: 0;
+  position: fixed;
+  z-index: 100;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: rgba(0, 0, 0, 0.7);
+  transition: all 400ms;
+  pointer-events: none;
+}
+.modal.open {
+  opacity: 1;
+  pointer-events: initial;
+}
+
+.modal > div {
+  opacity: 0;
+  transform: translateY(-100%);
+  transition: all 200ms;
+}
+.modal.open > div {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.loading:after {
+  content: "";
+  position: absolute;
+  left: -46px;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 10;
+  opacity: 0.3;
+  pointer-events: none;
+  background: repeating-linear-gradient(-55deg, #eee 1px, #aaa 2px, #aaa 11px, #eee 12px, #eee 20px);
+  animation-name: bg_strips;
+  animation-duration: 0.6s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes bg_strips {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(46px);
+  }
+}
+
+/* bootstraps side-nav */
+/* .navbar-collapse .hstack {
+    color: inherit;
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.navbar-collapse .hstack.active {
+    border-right: 0.4rem solid rgba(10, 173, 255, 1);
+    box-shadow: inset 0 0 1rem 2rem rgba(10, 173, 255, 0.1);
+}
+.navbar-collapse .hstack:hover {
+    box-shadow: inset 0 0 1rem 2rem rgba(0, 0, 0, 0.2) !important;
+}
+.navbar-collapse .vstack .vstack .hstack {
+    box-shadow: inset 0 0 1rem 2rem rgba(0, 0, 0, 0.1);
+}
+.navbar-collapse .hstack + .vstack .hstack {
+    padding-left: 3rem;
+} */
+
+/* .avatar {
+    position: relative;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.avatar img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
+    object-position: center;
+} */
+
+/* .indexCard,
+.indexCard:hover {
+    color: #666;
+    transition: 200ms;
+    filter: saturate(0.2);
+    box-shadow: 0 1px 1rem rgba(0, 0, 0, 0.05);
+}
+
+.indexCard:hover {
+    color: #666;
+    transform: translateY(-0.5rem);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+}
+
+.indexCard svg {
+    width: 5rem !important;
+    height: 5rem !important;
+} */
+
+/* .card-title {
+    margin-bottom: 1.5rem;
+    font-family: "Montserrat", sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #58666e;
+}
+.card.bg-dark pre {
+    color: #fff;
+    padding-bottom: 1rem;
+}
+.card.bg-dark .card-title {
+    color: #c3ccc6;
+} */
+
+/* .fixed_alert .alert {
+    position: fixed;
+    top: 2rem;
+    z-index: 1000;
+} */
+
+/* .table th {
+    padding: 0.4rem;
+    text-transform: uppercase;
+}
+.table td {
+    padding: 0.4rem;
+}
+th.title,
+td.title {
+    max-width: 300px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+th.checkbox,
+td.checkbox {
+    min-width: 36px;
+    text-align: center;
+}
+td .btn-sm {
+    padding: 0.15rem 0.45rem;
+}
+@media (max-width: 576px) {
+    td .btn-sm {
+        padding: 0.1rem 0.4rem;
+    }
+} */
+
+/* .curved {
+    border-radius: 0.25rem;
+}
+.shadows {
+    box-shadow: 0 16px 24px 2px rgba(0, 0, 0, 0.14), 0 6px 30px 5px rgba(0, 0, 0, 0.12), 0 8px 10px -5px rgba(0, 0, 0, 0.3);
+}
+.truncate {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+[disabled] {
+    filter: grayscale(1);
+    opacity: 0.25 !important;
+} */
+
+/* input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    opacity: 1;
+} */
+/* input[type="checkbox"] {
+    position: relative;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    padding: 0;
+    outline: 0;
+    border: 0;
+    background: transparent;
+    box-sizing: border-box;
+    box-shadow: none;
+    text-align: center;
+    vertical-align: middle;
+    -webkit-appearance: none;
+    cursor: pointer;
+    color: #888;
+}
+input[type="checkbox"]:after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 18px;
+    height: 18px;
+    z-index: 0;
+    border: 2px solid;
+    transition: 0.1s;
+}
+input[type="checkbox"]:checked:after {
+    top: -4px;
+    left: -4px;
+    width: 10px;
+    height: 22px;
+    border-top-color: transparent;
+    border-left-color: transparent;
+    -webkit-transform: rotate(40deg);
+    transform: rotate(40deg);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    -webkit-transform-origin: 100% 100%;
+    transform-origin: 100% 100%;
+} */

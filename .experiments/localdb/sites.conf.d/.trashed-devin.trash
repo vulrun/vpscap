@@ -1,0 +1,25 @@
+###{"sites":["devin.appgo.in","devin.refer.gq"],"target":"http://0.0.0.0:3003/","sslCert":"devin.appgo.in"}###
+
+server {
+    listen                 80;
+    listen                 [::]:80;
+    listen                 443 ssl;
+    listen                 [::]:443 ssl;
+    server_name            devin.appgo.in devin.refer.gq;
+    error_page             404 /404.html;
+    error_page             500 502 503 504 /50x.html;
+    location / {
+        proxy_pass          http://0.0.0.0:3003/;
+        proxy_set_header    Host $http_host;
+        proxy_set_header    X-Real-IP $remote_addr;
+        proxy_set_header    X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header    X-Forwarded-Proto $scheme;
+    }
+
+    include                /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam            /etc/letsencrypt/ssl-dhparams.pem;
+    ssl_certificate        /etc/letsencrypt/live/devin.appgo.in/fullchain.pem;
+    ssl_certificate_key    /etc/letsencrypt/live/devin.appgo.in/privkey.pem;
+}
+
+

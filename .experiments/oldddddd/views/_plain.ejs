@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>vpscap</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="shortcut icon" href="/assets/favicon.ico" />
+    <link rel="apple-touch-icon-precomposed" href="/assets/logo.png" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Open+Sans:wght@300;400;700;800&display=swap" />
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+    <script type="text/javascript" src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" type="text/css" href="/assets/style.css" />
+    <script>
+      feather.replace({ width: undefined, height: undefined });
+    </script>
+    <%- style %>
+    <script>
+      try {
+          window.LOCALS = {};
+          window.LOCALS = JSON.parse(<%- JSON.stringify(JSON.stringify(props)) %>);
+
+          // success & error handlers
+          const MESSAGES = getMessages();
+          if (MESSAGES?.error) snackbar(MESSAGES?.error, "crimson", 5e3);
+          if (MESSAGES?.success) snackbar(MESSAGES?.success, "forestgreen", 5e3);
+
+          function getMessages() {
+              const hash = window.location.hash.substring(1);
+              window.location.hash = "";
+
+              try {
+                  return JSON.parse(atob(hash));
+              } catch (err) {
+                  return {};
+              }
+          }
+
+          // setting page title
+          document.addEventListener("DOMContentLoaded", function () {
+              setPageTitle(getPageTitle(LOCALS?.pageTitle), document.title);
+          });
+
+          function getPageTitle(inp) {
+              if (!inp) {
+                  return window.location.pathname
+                      .replace(/(^\/+|\/+$)/g, "")
+                      .split("/")
+                      .pop();
+              }
+              return inp;
+          }
+
+          function setPageTitle(title, initial) {
+              initial = initial || window.location.hostname;
+              document.title = title + " - " + initial;
+              if (document.querySelector("h1") ?? null) {
+                  document.querySelector("h1").innerHTML = title;
+              }
+              return;
+          }
+      } catch (e) {
+          console.warn(e);
+      }
+    </script>
+  </head>
+  <body class="box-border">
+    <div id="app">
+      <%- body %>
+      <!--  -->
+      <script src="/assets/utils.js"></script>
+      <script src="/assets/scripts.js"></script>
+
+      <%- script %>
+    </div>
+  </body>
+</html>

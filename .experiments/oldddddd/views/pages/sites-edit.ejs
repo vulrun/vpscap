@@ -1,0 +1,32 @@
+<%- contentFor('headerButtons') %>
+<div class="ml-auto hstack"></div>
+
+<%- contentFor('body') %>
+<div class="row">
+  <div class="py-5"></div>
+  <div class="my-4 mx-auto w-full max-w-screen-sm">
+    <card :heading="locals?.action === 'edit_site' ? `Modifying Site Configuration for ${locals?.config?.fileName}` : `Add New Site Configuration`">
+      <form class="vstack space-y-4" method="POST" action="/sites">
+        <input type="hidden" name="id" :value="locals.id" />
+        <input type="hidden" name="action" :value="locals.action" />
+        <div class="my-3 vstack">
+          <label for="fileName" :class="classNames(form_label, '')">Configuration Name</label>
+          <input id="fileName" type="text" :class="classNames(form_field, 'px-3 h-10 font-mono')" name="fileName" :value="locals?.config?.fileName" placeholder="." required />
+        </div>
+        <div class="vstack">
+          <label for="sites" :class="classNames(form_label, '')">Domains & Sub Domains</label>
+          <input id="sites" type="text" :class="classNames(form_field, 'px-3 h-10 font-mono')" name="sites" :value="locals.config.sites" required />
+        </div>
+        <div class="vstack">
+          <label for="target" :class="classNames(form_label, '')">Target Location</label>
+          <input id="target" type="text" :class="classNames(form_field, 'px-3 h-10 font-mono')" name="target" :value="locals.config.target" required />
+        </div>
+        <div class="hstack pt-4">
+          <div class="me-auto"></div>
+          <a :class="classNames(btn_dark, 'w-20 h-10 px-3 text-sm font-normal bg-gray-700')" title="Add Site" href="/sites" v-html="icons['chevron-left'].toSvg({class: 'w-4 mr-1'}) + 'Back'"></a>
+          <button :class="classNames(btn_dark, 'w-20 h-10 px-3 text-sm font-normal bg-cyan-700 ml-2')" type="submit">{{ locals?.action === 'edit_site' ? `Modify` : `Add` }}</button>
+        </div>
+      </form>
+    </card>
+  </div>
+</div>

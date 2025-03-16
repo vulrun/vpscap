@@ -1,0 +1,18 @@
+###{"sites":["saurabh.apii.in"],"target":"/var/www/html/","sslCert":null}###
+
+server {
+    listen         80;
+    listen         [::]:80;
+    server_name    saurabh.apii.in;
+    error_page     404 /404.html;
+    error_page     500 502 503 504 /50x.html;
+    location / {
+        root         /var/www/html/;
+        index        index.html index.htm index.php;
+        try_files    $uri $uri/ =404;
+        include      /etc/nginx/snippets/php.conf;
+    }
+
+}
+
+
