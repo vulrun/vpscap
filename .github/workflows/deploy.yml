@@ -18,6 +18,24 @@ jobs:
         with:
           node-version: "22"
 
+      - name: Check core directory
+        run: |
+          ls -halF .
+          if [ ! -d "core" ]; then
+            echo "ERROR: 'core' directory does not exist."
+            exit 1
+          fi
+
+      - name: Install Core Dependencies
+        working-directory: core
+        run: |
+          npm install
+
+      - name: Build Core Scripts
+        working-directory: core
+        run: |
+          npm run build:all
+
       - name: Install dependencies
         run: |
           npm install
@@ -41,6 +59,7 @@ jobs:
         run: |
           # Force add the .output folder even if it's in .gitignore
           git add -f .output
+          git add -f core/bin
 
           # Commit changes to the dist branch
           git commit -m "Deploy build to dist branch"

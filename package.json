@@ -16,8 +16,8 @@
     "app:start": "export $(cat .env | xargs) && node .output/server/index.mjs",
     "pm2:start": "export $(cat .env | xargs) && pm2 start .output/server/index.mjs --name=vpscap",
     "pm2:reload": "export $(cat .env | xargs) && pm2 reload vpscap --update-env",
-    "tweak-nginx-conf": "export $(cat .env | xargs) && sudo -E $(which node) ./core/scripts/tweak-nginx-conf",
-    "setup-admin-user": "node ./core/scripts/setup-admin-user"
+    "tweak-nginx-conf": "export $(cat .env | xargs) && sudo -E ./core/bin/tweak-nginx-conf",
+    "setup-admin-user": "./core/bin/setup-admin-user"
   },
   "dependencies": {
     "@radix-icons/vue": "^1.0.0",

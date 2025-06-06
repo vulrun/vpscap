@@ -1,12 +1,12 @@
-import fsPath from "node:path";
-import fs from "fs-extra";
-// import fs from "node:fs/promises";
-// import fs from "node:fs";
-import os from "node:os";
-import prompts from "prompts";
-import { extendObj } from "../../utils/helpers.js";
-import { setEnvDataSync, getEnvDataSync } from "../../server/utils/bin/env.js";
-import { createAdminUser } from "../../server/utils/bin/admin.js";
+const fsPath = require("node:path");
+const fs = require("fs-extra");
+// const fs = require("node:fs/promises");
+// const fs = require("node:fs");
+const os = require("node:os");
+const prompts = require("prompts");
+const { setEnvDataSync, getEnvDataSync } = require("../helpers/env.js");
+const { createAdminUser } = require("../helpers/admin.js");
+const { extendObj } = require("../helpers/funcs.js");
 
 let tempOtpMem;
 const otpRegex = /^[0-9]{6}$/g;
@@ -68,8 +68,8 @@ const questions = [
 (async () => {
   const currentEnvObject = getEnvDataSync();
   const currentUserName = os.userInfo().username;
-  const vpscapRootPath = fsPath.resolve();
-  const vpscapLocalPath = fsPath.resolve(".localdb");
+  const vpscapRootPath = fsPath.resolve("");
+  const vpscapLocalPath = fsPath.resolve(vpscapRootPath, ".localdb");
   const accountFilePath = fsPath.resolve(vpscapLocalPath, "account.json");
 
   // touching dir and files
@@ -80,7 +80,7 @@ const questions = [
   currentEnvObject.APP_ENV ||= "production";
   currentEnvObject.NITRO_PORT ||= 3010;
   currentEnvObject.NUXT_LOCAL_DB_DIR ||= vpscapLocalPath;
-  setEnvDataSync(currentEnvObject);
+  setEnvDataSync(currentEnvObject, vpscapRootPath);
 
   // terminal prints
   console.log("✔", "\x1b[1mLocalDir Path: \x1b[0m", vpscapLocalPath);
@@ -91,6 +91,7 @@ const questions = [
   accountObj.localDir = vpscapLocalPath;
   accountObj.filePath = accountFilePath;
   accountObj.vpsUser = currentUserName;
+  await fs.writeJson(accountFilePath, accountObj, { spaces: "  " });
 
   const onCancel = () => {
     console.log("❌ Operation canceled: No changes were made. Bye Bye!");

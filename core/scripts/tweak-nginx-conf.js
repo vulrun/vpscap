@@ -1,13 +1,11 @@
-import fsPath from "node:path";
-import fs from "fs-extra";
-// import fs from "node:fs/promises";
-// import fs from "node:fs";
-import os from "node:os";
-import * as envs from "../../server/utils/bin/env.js";
-import { extendObj } from "../../utils/helpers.js";
-import NginxParser from "../../server/utils/NginxParser.js";
-
-const nginxParser = new NginxParser();
+const fsPath = require("node:path");
+const fs = require("fs-extra");
+// const fs = require("node:fs/promises");
+// const fs = require("node:fs");
+const os = require("node:os");
+const { setEnvDataSync, getEnvDataSync } = require("../helpers/env.js");
+const { extendObj } = require("../helpers/funcs.js");
+const NginxParser = require("../helpers/NginxParser.js");
 
 (async () => {
   try {
@@ -15,7 +13,8 @@ const nginxParser = new NginxParser();
 
     // prettier-ignore
     const backupSuffix = new Date().toISOString().replace(/[^A-Z0-9-]/g, "-").replace(/-+/g, "-");
-    const currentEnvObject = envs.getEnvDataSync();
+    const currentEnvObject = getEnvDataSync();
+    if (!currentEnvObject?.NUXT_LOCAL_DB_DIR) throw new Error("Please setup admin user first");
     const accountFilePath = fsPath.resolve(currentEnvObject?.NUXT_LOCAL_DB_DIR, "account.json");
 
     const accountObj = await fs.readJson(accountFilePath);
@@ -31,6 +30,7 @@ const nginxParser = new NginxParser();
     if (!hasWriteAccess) throw new Error("NO_WRITE_ACCESS");
 
     // modify the nginx.conf as per needs
+    const nginxParser = new NginxParser();
     const nginxConfRaw = await fs.readFile(nginxFilePath, "utf8").catch((err) => "");
     const nginxConfJson = nginxParser.toJSON(nginxConfRaw);
     const nginxConfCopy = JSON.parse(JSON.stringify(nginxConfJson));
@@ -53,6 +53,6 @@ const nginxParser = new NginxParser();
 
     console.log("✅ Success, nginx configuration has been updated.");
   } catch (err) {
-    console.error("❌ Error, updating nginx.conf ~", err);
+    console.error("❌ Error, updating nginx.conf ~", err?.message);
   }
 })();
