@@ -23,12 +23,12 @@ const availableSiteCols = [
   {
     accessorKey: "confName",
     header: ({ column }) => h(DataTableColumnHeader, { column, title: "Configuration" }),
-    cell: ({ row }) => h("div", { class: ["font-mono text-xs text-gray-500 truncate w-[160px]", { "opacity-40": !row?.original?.isActive }] }, row.getValue("confName")),
+    cell: ({ row }) => h("div", { class: ["font-mono text-xs text-gray-500 truncate w-[160px]", { "opacity-40": !row?.original?.isActive }] }, row?.original?.confName),
   },
   {
     accessorKey: "domain",
     header: ({ column }) => h(DataTableColumnHeader, { column, title: "Domains" }),
-    cell: ({ row }) => h(SitesRowDomain, { row, class: "font-mono font-medium text-xs truncate w-[160px]" }),
+    cell: ({ row }) => h(SitesRowDomain, { row, class: "font-mono font-medium text-xs truncate w-[180px]" }),
   },
   {
     accessorKey: "target",
@@ -36,8 +36,8 @@ const availableSiteCols = [
     cell: ({ row }) =>
       h(HoverText, {
         class: cn(["font-mono text-left text-xs text-pink-600 truncate w-[320px]", { "text-gray-500 opacity-40": !row?.original?.isActive }]),
-        innerText: row.getValue("target"),
-        hoverText: row.getValue("target"),
+        innerText: row?.original?.target,
+        hoverText: row?.original?.target,
         hoverClass: "",
       }),
   },
@@ -51,7 +51,7 @@ const availableSiteCols = [
 <template>
   <div class="w-full h-full flex-1">
     <div class="hstack items-start justify-between">
-      <MainHeading title="Web Sites">Manage and customize configuration files for your websites.</MainHeading>
+      <MainHeading title="Web Sites">Manage or customize configuration files for your websites.</MainHeading>
 
       <div class="flex gap-2">
         <HintButton title="Refresh" variant="outline" size="sm" class="relative hstack bg-background text-muted-foreground h-10 w-10 [&_svg]:size-4" @click.prevent="availableSites?.reload.value">
@@ -62,11 +62,11 @@ const availableSiteCols = [
             <PlusIcon />
           </HintButton>
         </SitesEditor>
-        <SitesConfirmAction :class="['text-gray-700']" action="rebuildAllSites" @update:list="() => availableSites?.reload.value()" asChild>
+        <ConfirmAction :class="['text-gray-700']" action="rebuildAllSites" @update:list="() => availableSites?.reload.value()" asChild>
           <HintButton title="Rebuild All" variant="outline" size="sm" class="relative hstack bg-background text-muted-foreground h-10 w-10 [&_svg]:size-4">
             <ReplaceAllIcon />
           </HintButton>
-        </SitesConfirmAction>
+        </ConfirmAction>
       </div>
     </div>
 

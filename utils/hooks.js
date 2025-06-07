@@ -1,18 +1,23 @@
-import { ref, watch, useSlots } from "vue";
+import { createApp, h, ref, watch, useSlots } from "vue";
 import { defu } from "defu";
 
-export function useSlotAsHtml(slotName, joinBy) {
+export function useSlotAsText(slotName, useAsHtml) {
   const slots = useSlots();
   const html = ref("");
 
   onMounted(() => {
-    try {
-      const slot = slots[slotName || "default"];
-      if (!slot) return;
+    const slot = slots[slotName || "default"];
+    if (!slot) return;
 
-      const htmlNodes = slot()?.map((s) => s?.children);
-      html.value = htmlNodes.join(joinBy || "");
-    } catch (err) {}
+    const container = document.createElement("div");
+    const app = createApp({
+      render() {
+        return h("div", slot());
+      },
+    });
+    app.mount(container);
+    html.value = useAsHtml ? container.innerHTML : container.innerText;
+    app.unmount();
   });
 
   return html;

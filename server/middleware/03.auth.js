@@ -2,8 +2,9 @@ import { validateAdminUser } from "@@/server/utils/bin/admin";
 
 export default eventHandler((event) => {
   if (import.meta.client) return;
-  if (!event.path.startsWith("/api")) return;
   if (event.path === "/api/ping") return;
+  if (event.path.startsWith("/api/public")) return;
+  if (!event.path.startsWith("/api")) return;
 
   try {
     const token = getHeader(event, "Authorization")?.replace("Bearer ", "");

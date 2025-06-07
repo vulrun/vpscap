@@ -22,6 +22,7 @@ async function onSubmit() {
     toast(resp?.message || resp);
     isSubmitting.value = false;
     await delay(400);
+    inputDomain.value = "";
     dialogOpen.value = false;
   } catch (error) {
     isSubmitting.value = false;
@@ -44,13 +45,13 @@ async function onSubmit() {
         </DialogHeader>
         <div class="vstack my-2 gap-2">
           <label for="domains" class="text-sm font-medium">Enter Domain(s)</label>
-          <Input id="domains" v-model="inputDomain" type="text" class="text-md" />
+          <Textarea id="domains" v-model="inputDomain" class="text-md" />
         </div>
         <div class="vstack my-2 gap-2">
-          <span class="font-semibold text-sm">Validated Domain(s):</span>
-          <div class="flex-1 hstack gap-2">
-            <span class="font-normal text-xs tracking-wider rounded bg-gray-600 text-white px-1.5 h-5" v-for="dom of computedDomains">{{ dom }}</span>
-          </div>
+          <span class="font-semibold text-sm">Validated Domains ({{ computedDomains.length }}):</span>
+          <ScrollableDiv class="flex-1 hstack gap-2 flex-wrap">
+            <span class="font-normal text-xs tracking-wider rounded bg-gray-600 text-white px-1.5 h-5 leading-5" v-for="doma of computedDomains">{{ doma }}</span>
+          </ScrollableDiv>
         </div>
         <DialogFooter class="flex">
           <RotatingText v-if="isSubmitting" :delay="2000" :values="['Please Wait...', 'Loading...']" class="font-medium text-green-700" />

@@ -8,6 +8,7 @@ import lo from "lodash";
 // import { z } from "zod";
 import shell from "@/server/utils/shell";
 import SslAcme from "@/server/utils/vps/SslAcme";
+import SslMeta from "@/server/utils/vps/SslMeta";
 import NginxHandler from "@/server/utils/vps/Nginx";
 
 const cleanArray = (val) => [].concat(val).filter(Boolean);
@@ -21,6 +22,7 @@ export default class WebSites {
     const accountObj = fs.readJsonSync(this.#accountFilePath);
     if (!accountObj?.vpsUser) throw new Error("Please setup admin user first");
 
+    this.sslMeta = new SslMeta();
     this.sslAcme = new SslAcme({ webSites: this, email: accountObj?.username });
     this.nginx = new NginxHandler({ webSites: this });
     this.nginxReload = debounce(() => this.nginx.reload(), 1000);
@@ -37,6 +39,7 @@ export default class WebSites {
     if (!shell.test("-d", this.#confDirPath)) throw new Error("Invalid Path");
     const confFiles = shell.find(this.#confDirPath);
     const sslDomains = await this.findSslDomains();
+    const sslMonitors = await this.sslMeta.list();
 
     const data = [];
     for (const confPath of confFiles) {
@@ -61,6 +64,7 @@ export default class WebSites {
         domain: confData?.domain,
         target: confData?.target,
         enableIndexing: confData?.enableIndexing || false,
+        hasSSLMonitor: sslMonitors.includes(confData?.domain),
         hasSSL: sslDomains.includes(confData?.domain),
         enableSSL: confData?.enableSSL,
         forceSSL: confData?.forceSSL,
@@ -167,6 +171,10 @@ export default class WebSites {
 
   async rebuildDefaultConf() {
     const defaultConfPath = fsPath.resolve(this.#confDirPath, "_default.conf");
+    if (!shell.test("-f", defaultConfPath)) {
+      return await this.#setDefaultConf();
+    }
+
     const defaultConfId = hexEncode(defaultConfPath);
 
     await this.rebuild(defaultConfId);
@@ -294,6 +302,31 @@ export default class WebSites {
       target: site?.target,
     });
   }
+  async renewCerts() {
+    if (process?.env?.APP_ENV?.startsWith("dev")) {
+      console.log(`🗿 Skipping, certificate installation on development server is not possible`);
+      throw new Error(`🗿 Skipping, certificate installation on development server is not possible`);
+    }
+
+    // fetch all installed certs
+    const installed = await this.findAllCert();
+    // choose certs expiring in 1 day
+    const expiring = installed.filter((itm) => itm?.daysLeft <= 1);
+    // filter invalid domains
+    const sanitized = expiring.filter((itm) => itm.domains.length);
+    const promises = sanitized.map((itm) => {
+      if (itm?.domains.length < 1) throw new Error("Domain is missing");
+      if (itm?.domains.length !== 1) throw new Error("Mulitple domains are not allowed");
+
+      return this.sslAcme.issueCertificate(itm?.domains);
+    });
+
+    // loop through generating the new certificate
+    console.log("🔄 Renewing SSL certificate...");
+    await this.sslAcme.initialize();
+    return await Promise.allSettled(promises);
+  }
+
   async findAllCert() {
     try {
       const installed = await this.sslAcme.listCertificates();
@@ -327,8 +360,6 @@ export default class WebSites {
   getCertDirPaths() {
     return this.sslAcme.getPaths();
   }
-  // todo: renew certificates
-  async renewOutdatedCerts() {}
 
   // ====================== Private Cert Methods ====================== //
   #filterCerts(certs, domain) {
@@ -355,6 +386,7 @@ export default class WebSites {
           daysLeft,
           remarks: daysLeft > 0 ? `${daysLeft} days left` : "EXPIRED",
           domain: domain,
+          domains: this.nginx.sanitizeDomains(domain),
         });
       }
     }

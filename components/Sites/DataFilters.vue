@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from "vue";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/utils";
 import { CheckIcon, CircleFadingPlusIcon } from "lucide-vue-next";
 
 const props = defineProps(["column", "title", "options"]);

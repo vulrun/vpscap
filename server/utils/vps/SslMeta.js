@@ -38,20 +38,21 @@ export default class SslMeta {
       const peerCert = resp?.socket.getPeerCertificate();
 
       if (!peerCert || Object.keys(peerCert).length === 0) {
-        throw new Error("Peer certificate not found");
+        throw new Error("INVALID_PEER_CERTIFICATE");
+      }
+      if (peerCert?.issuer && peerCert?.subject && JSON.stringify(peerCert?.issuer) === JSON.stringify(peerCert?.subject)) {
+        throw new Error("SELF_SIGNED_SSL_CERTIFCATE");
       }
 
       const cert = {};
       cert.domain = domain;
       cert.error = null;
-      cert.isValid = null;
       cert.isCertAuth = peerCert?.ca;
       cert.subject_name = peerCert?.subject?.CN;
       cert.subject_names = lo([]).concat(peerCert?.subject?.CN, peerCert?.subjectaltname.replaceAll("DNS:", "").split(",")).map(lo.trim).uniq().value();
       cert.subject_alt_name = peerCert?.subjectaltname.replaceAll("DNS:", "").split(",");
       // Check if any of the certificate names (including wildcards) match the domain
       cert.validNames = cert.subject_names.filter((n) => this.#isWildcardMatch(domain, n));
-      cert.isValid = cert?.validNames.length > 0;
       cert.issuer_name = peerCert?.issuer?.CN;
       cert.issuer_org = peerCert?.issuer?.O;
       cert.issuer_loc = peerCert?.issuer?.C;
@@ -63,10 +64,12 @@ export default class SslMeta {
       cert.expiry = new Date(peerCert?.valid_to).toISOString();
       cert.days_left = this.#daysLeft(peerCert?.valid_to);
       cert.isExpired = cert.days_left <= 0;
+      cert.isValid = cert?.validNames.length > 0 && cert.days_left > 0;
       cert.remarks = this.#remarks(cert);
-      // cache result
       if (!cert?.isValid) throw new Error("INVALID_SSL");
+      if (cert?.isExpired) throw new Error("EXPIRED_SSL");
 
+      // cache result
       this.cacheDb.selectDataKey(domain, true).setData(cert, "1d");
       return cert;
     } catch (err) {
@@ -162,11 +165,15 @@ export default class SslMeta {
     cert.error = String(cert?.error?.message || cert?.error || "");
 
     if (/EPROTO/.test(cert?.error)) return "SSL not active";
+    if (/EAI_AGAIN/.test(cert?.error)) return "Domain not found";
     if (/ENOTFOUND/.test(cert?.error)) return "Domain not found";
     if (/TIMEDOUT/.test(cert?.error)) return "Domain server is down";
+    if (/ECONNREFUSED/.test(cert?.error)) return "Domain server is down";
     if (/INVALID_SSL/.test(cert?.error)) return `SSL certificate is invalid`;
+    if (/INVALID_PEER_CERTIFICATE/.test(cert?.error)) return `Peer certificate is invalid`;
+    if (/SELF_SIGNED_SSL_CERTIFCATE/.test(cert?.error)) return `SSL certificate is self signed`;
+    if (cert?.isExpired) return `SSL certifcate expired`;
     if (cert?.isValid) return `${cert?.days_left} days left`;
-    if (cert?.isExpired) return `EXPIRED`;
 
     return cert?.error || `UNKNOWN ERROR`;
   }

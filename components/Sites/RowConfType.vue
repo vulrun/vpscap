@@ -1,25 +1,20 @@
 <script setup>
-import { WifiZeroIcon, DotIcon, FolderOpenIcon, FolderRootIcon, FolderSymlinkIcon } from "lucide-vue-next";
+import { WifiZeroIcon, DotIcon, FolderOpenIcon, FolderRootIcon, FolderSymlinkIcon, BinocularsIcon } from "lucide-vue-next";
 const { row, class: classes } = defineProps(["row", "class"]);
-
-function confTypeIcon(type) {
-  if (type === "serve") return FolderOpenIcon;
-  if (type === "proxy") return FolderRootIcon;
-  if (type === "redirect") return FolderSymlinkIcon;
-
-  return WifiZeroIcon;
-}
 </script>
 
 <template>
-  <div :class="cn('hstack justify-start [&_svg]:size-4 [&_svg]:shrink-0', { '[&_span]:text-gray-500 opacity-40': !row?.original?.isActive }, classes)">
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger as-child>
-          <component :is="confTypeIcon(row?.original?.confType)" class="text-gray-400 mx-2" />
-        </TooltipTrigger>
-        <TooltipContent>{{ row?.original?.confType }}</TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+  <div :class="cn('hstack justify-start space-x-2 [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-gray-400', row?.original?.isActive ? null : '[&_span]:text-gray-500 opacity-40', classes)">
+    <HoverText v-if="row?.original?.confType" :hoverText="row?.original?.confType">
+      <i v-if="false"></i>
+      <FolderOpenIcon v-else-if="row?.original?.confType === 'serve'" />
+      <FolderRootIcon v-else-if="row?.original?.confType === 'proxy'" />
+      <FolderSymlinkIcon v-else-if="row?.original?.confType === 'redirect'" />
+      <WifiZeroIcon v-else />
+    </HoverText>
+
+    <HoverText v-if="row.original?.hasSSLMonitor" hoverText="SSL monitoring is active">
+      <BinocularsIcon />
+    </HoverText>
   </div>
 </template>

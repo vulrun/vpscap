@@ -79,6 +79,7 @@ export default class NginxHandler {
   }
 
   async validateAndSanitize(input) {
+    if (!input) throw new Error("INVALID_INPUT_PAYLOAD");
     input.domain = this.sanitizeDomains(input?.domain);
 
     const ConfSchema = z
@@ -213,7 +214,6 @@ export default class NginxHandler {
     const server443 = {};
     if (obj?.enableSSL) {
       let sslCert = await this.webSites.findOneCert(obj?.domain);
-      console.log("🚀 ~ NginxHandler ~ writeConf ~ sslCert:", sslCert);
       // try to install ssl certificate
       if (!sslCert) {
         await this.webSites.installCert(obj?.domain);

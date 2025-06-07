@@ -275,3 +275,7 @@ export function sanitizeDomains(val) {
   val.sort();
   return val;
 }
+
+export function toArray(data) {
+  return [].concat(data).filter(Boolean);
+}

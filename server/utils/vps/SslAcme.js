@@ -143,20 +143,6 @@ export default class SslAcme {
     await fs.move(certLiveDomainPath, certTrashDomainPath);
   }
 
-  // todo: renew certificates
-  async renewCertificate(domain) {
-    if (!domain) throw new Error("SSLManager: Domain is missing");
-
-    const certPath = fsPath.join(this.#certsLivePath, domain, `cert.crt`);
-    if (!fs.existsSync(certPath)) {
-      console.log("⚠️ No existing certificate found. Issuing a new one...");
-      return this.issueCertificate();
-    }
-
-    console.log("🔄 Renewing SSL certificate...");
-    await this.issueCertificate();
-  }
-
   // ====================== Private Methods ====================== //
   #setupDirectories() {
     fs.ensureDirSync(this.#certsLivePath);

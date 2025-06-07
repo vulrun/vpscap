@@ -1,4 +1,5 @@
 <script setup>
+import "vue-sonner/style.css";
 const { title, description, icon } = useAppConfig();
 // useSeoMeta({
 //   title: `${title} - ${description}`,

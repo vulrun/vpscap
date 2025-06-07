@@ -25,20 +25,18 @@ const monitoredCerts = useApiFetch(`/api/fetch/monitoredCerts`);
 const monitoredCols = [
   {
     accessorKey: "domain",
-    accessorFn: (row) => [].concat(row?.domain || "").filter(Boolean),
     header: ({ column }) => h(DataTableColumnHeader, { column, title: "Domain" }),
-    cell: ({ row }) => h("div", { class: "" }, row.getValue("domain")),
+    cell: ({ row }) => h("div", { class: "" }, toArray(row?.original?.domain)),
   },
   {
     accessorKey: "subject_names",
-    accessorFn: (row) => [].concat(row?.subject_names || "").filter(Boolean),
     header: ({ column }) => h(DataTableColumnHeader, { column, title: "Subject Names" }),
-    cell: ({ row }) => h(CertsRowDomain, { row, class: "text-gray-500 text-sm fonts-mono-inconsolata", domains: row.getValue("subject_names") }),
+    cell: ({ row }) => h(CertsRowDomain, { row, class: "text-gray-500 text-sm fonts-mono-inconsolata", domains: toArray(row?.original?.subject_names) }),
   },
   {
     accessorKey: "issuer",
     header: ({ column }) => h(DataTableColumnHeader, { column, title: "Issuer" }),
-    cell: ({ row }) => h("div", { class: "fonts-mono-ubuntu text-gray-600" }, row.getValue("issuer")),
+    cell: ({ row }) => h("div", { class: "fonts-mono-ubuntu text-gray-600" }, row?.original?.issuer),
   },
   {
     accessorKey: "remarks",
@@ -49,7 +47,7 @@ const monitoredCols = [
   { id: "expiresAt" },
   {
     id: "actions",
-    cell: ({ row }) => ConfirmDeleteAction({ action: "deleteMonitoredCert", domains: row.getValue("domain"), onUpdate: () => monitoredCerts.reload.value() }),
+    cell: ({ row }) => ConfirmDeleteAction({ action: "deleteMonitoredCert", domains: toArray(row?.original?.domain), onUpdate: () => monitoredCerts.reload.value() }),
   },
 ];
 
@@ -58,19 +56,17 @@ const installedCols = [
   // {
   //   accessorKey: "serialNo",
   //   header: ({ column }) => h(DataTableColumnHeader, { column, title: "serialNo" }),
-  //   cell: ({ row }) => h("span", { class: "font-mono" }, row.getValue("serialNo")),
+  //   cell: ({ row }) => h("span", { class: "font-mono" }, row?.original?.serialNo),
   // },
   {
     accessorKey: "certName",
-    accessorFn: (row) => [].concat(row?.certName || "").filter(Boolean),
     header: ({ column }) => h(DataTableColumnHeader, { column, title: "Domain" }),
-    cell: ({ row }) => h(CertsRowDomain, { row, class: "", domains: row.getValue("certName") }),
+    cell: ({ row }) => h(CertsRowDomain, { row, class: "", domains: toArray(row?.original?.certName) }),
   },
   {
     accessorKey: "altNames",
-    accessorFn: (row) => [].concat(row?.altNames || "").filter(Boolean),
     header: ({ column }) => h(DataTableColumnHeader, { column, title: "Subject Names" }),
-    cell: ({ row }) => h(CertsRowDomain, { row, class: "text-gray-500 text-sm fonts-mono-inconsolata", domains: row.getValue("altNames") }),
+    cell: ({ row }) => h(CertsRowDomain, { row, class: "text-gray-500 text-sm fonts-mono-inconsolata", domains: toArray(row?.original?.altNames) }),
   },
   {
     accessorKey: "issuer",
@@ -93,7 +89,7 @@ const installedCols = [
   { id: "dirName" },
   {
     id: "actions",
-    cell: ({ row }) => ConfirmDeleteAction({ action: "deleteInstalledCert", domains: row.getValue("certName"), onUpdate: () => installedCerts.reload.value() }),
+    cell: ({ row }) => ConfirmDeleteAction({ action: "deleteInstalledCert", domains: toArray(row?.original?.certName), onUpdate: () => installedCerts.reload.value() }),
   },
 ];
 
@@ -118,7 +114,7 @@ function ConfirmDeleteAction({ action, domains, onUpdate }) {
   <ClientOnly>
     <div class="w-full">
       <div class="flex items-start justify-between">
-        <MainHeading title="SSL Certificates">Here&apos;s the list of certificates, you are currently managing...</MainHeading>
+        <MainHeading title="SSL Certificates">Monitor or install SSL certificates for your domains</MainHeading>
 
         <Tabs v-model="viewMode" @update:model-value="setViewMode">
           <TabsList class="h-12 border border-input bg-transparent">

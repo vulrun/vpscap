@@ -52,6 +52,9 @@ const NginxParser = require("../helpers/NginxParser.js");
     console.log("🚀 ~ nginxConfMod:", "\n###_MODIFIED_BY_VPSCAP_###\n\n" + nginxConfModified);
 
     console.log("✅ Success, nginx configuration has been updated.");
+
+    // sudo chown -R www-data:www-data /var/lib/nginx
+    // sudo chmod -R 700 /var/lib/nginx
   } catch (err) {
     console.error("❌ Error, updating nginx.conf ~", err?.message);
   }

@@ -13,6 +13,7 @@ import {
   SettingsIcon,
   BellIcon,
   LogOutIcon,
+  GithubIcon,
 } from "lucide-vue-next";
 
 const props = defineProps(["class", "styles", "fixed_classes"]);
@@ -92,7 +93,37 @@ function doLogout() {
     </div>
 
     <div :class="cn('w-full fixed bottom-0 left-0 right-0 p-2', props?.fixed_classes)">
-      <DropdownMenu>
+      <div class="z-50 min-w-56 overflow-hidden rounded-sm border-0 bg-gray-700 p-1 text-white shadow-inner">
+        <div class="flex items-center px-1 py-1.5 text-left text-sm font-normal">
+          <LayoutsAvatarDiv />
+        </div>
+        <div class="-mx-1 my-1 h-px bg-gray-800" />
+
+        <NuxtLink
+          to="/guide"
+          class="cursor-pointer relative flex select-none items-center rounded-sm gap-2 px-2 py-1 h-10 text-sm outline-none transition-colors hover:bg-gray-800 [&>svg]:size-4 [&>svg]:shrink-0"
+        >
+          <MonitorCheckIcon />
+          Installation Guide
+        </NuxtLink>
+        <a
+          href="https://github.com/vulrun/vpscap"
+          target="_blank"
+          class="cursor-pointer relative flex select-none items-center rounded-sm gap-2 px-2 py-1 h-10 text-sm outline-none transition-colors hover:bg-gray-800 [&>svg]:size-4 [&>svg]:shrink-0"
+        >
+          <GithubIcon class="size-4" />
+          Github
+        </a>
+        <div
+          @click.prevent="doLogout"
+          class="cursor-pointer relative flex select-none items-center rounded-sm gap-2 px-2 py-1 h-10 text-sm outline-none transition-colors hover:bg-gray-800 [&>svg]:size-4 [&>svg]:shrink-0"
+        >
+          <LogOutIcon />
+          Log out
+        </div>
+      </div>
+
+      <!-- <DropdownMenu>
         <DropdownMenuTrigger class="w-full hstack p-2 gap-2 rounded-md shadow transition-all text-gray-200 bg-gray-50/10 hover:bg-gray-50/20 data-[state=open]:bg-gray-50/20">
           <LayoutsAvatarDiv />
           <ChevronsUpDownIcon class="ml-auto size-4" />
@@ -112,24 +143,24 @@ function doLogout() {
               Installation Guide
             </NuxtLink>
           </DropdownMenuItem>
-          <!-- <DropdownMenuItem as-child class="cursor-pointer">
+           <DropdownMenuItem as-child class="cursor-pointer">
               <NuxtLink to="/guide">
                 <BadgeCheckIcon />
                 Account
               </NuxtLink>
-            </DropdownMenuItem> -->
-          <!-- <DropdownMenuItem as-child class="cursor-pointer">
+            </DropdownMenuItem> 
+          <DropdownMenuItem as-child class="cursor-pointer">
               <NuxtLink to="/guide">
                 <BellIcon />
                 Notifications
               </NuxtLink>
-            </DropdownMenuItem> -->
-          <!-- <DropdownMenuItem as-child class="cursor-pointer">
+            </DropdownMenuItem> 
+           <DropdownMenuItem as-child class="cursor-pointer">
             <NuxtLink to="/settings">
               <SettingsIcon />
               Settings
             </NuxtLink>
-          </DropdownMenuItem> -->
+          </DropdownMenuItem> 
 
           <DropdownMenuSeparator />
           <DropdownMenuItem class="cursor-pointer" @click.prevent="doLogout">
@@ -137,7 +168,7 @@ function doLogout() {
             Log out
           </DropdownMenuItem>
         </DropdownMenuContent>
-      </DropdownMenu>
+      </DropdownMenu> -->
     </div>
   </div>
 </template>

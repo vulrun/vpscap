@@ -2,10 +2,10 @@
 import { ClipboardIcon, ClipboardPasteIcon } from "lucide-vue-next";
 
 const props = defineProps(["textToCopy"]);
-const slotData = useSlotAsHtml();
+const slotText = useSlotAsText();
 
 const buttonIcon = ref(ClipboardIcon);
-const textToCopy = ref(props?.textToCopy || slotData);
+const textToCopy = ref(props?.textToCopy || slotText);
 
 const copyToClipboard = () => {
   navigator.clipboard
