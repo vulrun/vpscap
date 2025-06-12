@@ -1,0 +1,1 @@
+import{c as e}from"./ujrmovv1.js";import{b as o,o as n,p as c,n as l,u as t}from"./CQzfIEGG.js";const u={__name:"SimpleCard",props:["class"],setup(a){const s=a;return(r,d)=>(n(),o("div",{class:l(("cn"in r?r.cn:t(e))("rounded-lg border bg-card text-card-foreground shadow-sm p-6",s==null?void 0:s.class))},[c(r.$slots,"default")],2))}};export{u as _};

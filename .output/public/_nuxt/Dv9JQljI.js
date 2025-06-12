@@ -1,0 +1,1 @@
+import{b as n,o as r}from"./CQzfIEGG.js";const _=(t,e)=>{const c=t.__vccOpts||t;for(const[o,s]of e)c[o]=s;return c},a={},f={class:""};function l(t,e){return r(),n("div",f,"test page")}const d=_(a,[["render",l]]);export{d as default};
