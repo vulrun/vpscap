@@ -14,6 +14,7 @@ export default class SslMeta {
   constructor() {
     this.db = localdb("certs-monitored");
     this.deletedDb = localdb("certs-monitored", "deletedData");
+    this.archivedDb = localdb("certs-monitored", "archivedData");
     this.cacheDb = localdb("certs-monitored-cache");
   }
 
@@ -87,20 +88,18 @@ export default class SslMeta {
     }
   }
 
-  async fetchInBulk(domains) {
-    // make it lowercase for case insensitivity
-    if (domains && Array.isArray(domains)) {
-      domains = domains.map((domain) => domain.toLowerCase());
-    }
-
+  async fetchInBulk() {
     // fetch and merge data
-    domains = cleanArray(this.db.getData(), domains);
-
+    let domains = cleanArray(this.db.getData());
+    let archived = cleanArray(this.archivedDb.getData());
     if (!Array.isArray(domains) && domains.length <= 0) return [];
 
     // Get certificates for all domains in parallel
     const result = await Promise.all(domains.map((d) => this.fetch(d)));
-    return result;
+    return cleanArray(
+      result,
+      archived.map((itm) => ({ domain: itm, isArchived: true }))
+    );
 
     // const final = {
     //   resolved: result?.filter((res) => res?.status !== "rejected").map((res) => res?.value),
@@ -151,6 +150,55 @@ export default class SslMeta {
     this.db.setData(savedDomains);
     this.deletedDb.setData(deletedDomains);
     domains.map((domain) => this.cacheDb.selectDataKey(domain, true).deleteData());
+  }
+
+  archive(domains) {
+    if (!Array.isArray(domains)) {
+      throw new Error("Input must be an array");
+    }
+    // make it lowercase for case insensitivity
+    domains = domains.map((domain) => domain.toLowerCase());
+
+    // fetch data
+    let savedDomains = this.db.getData([]);
+    let archivedDomains = this.archivedDb.getData([]);
+
+    // manipulate data
+    savedDomains = savedDomains.filter((domain) => !domains.includes(domain));
+    archivedDomains = archivedDomains.concat(domains);
+
+    // remove duplicates
+    savedDomains = lo(savedDomains).uniq().sortBy().value();
+    archivedDomains = lo(archivedDomains).uniq().sortBy().value();
+
+    // update db values
+    this.db.setData(savedDomains);
+    this.archivedDb.setData(archivedDomains);
+    domains.map((domain) => this.cacheDb.selectDataKey(domain, true).deleteData());
+  }
+
+  unArchive(domains) {
+    if (!Array.isArray(domains)) {
+      throw new Error("Input must be an array");
+    }
+    // make it lowercase for case insensitivity
+    domains = domains.map((domain) => domain.toLowerCase());
+
+    // fetch data
+    let savedDomains = this.db.getData([]);
+    let archivedDomains = this.archivedDb.getData([]);
+
+    // manipulate data
+    savedDomains = savedDomains.concat(domains);
+    archivedDomains = archivedDomains.filter((domain) => !domains.includes(domain));
+
+    // remove duplicates
+    savedDomains = lo(savedDomains).uniq().sortBy().value();
+    archivedDomains = lo(archivedDomains).uniq().sortBy().value();
+
+    // update db values
+    this.db.setData(savedDomains);
+    this.archivedDb.setData(archivedDomains);
   }
 
   #daysLeft(validTo) {

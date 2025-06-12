@@ -18,6 +18,21 @@ const sslio = new VpsCertMeta();
 const sites = new VpsWebsites();
 
 const controllers = {
+  async allStats() {
+    const cmeta = await sslio.list();
+    const cinst = await sites.findAllCert();
+    const siteList = await sites.list();
+    const actives = siteList.reduce((acc, itm) => (acc += itm?.isActive ? 1 : 0), 0);
+    const disabled = siteList.reduce((acc, itm) => (acc += !itm?.isActive ? 1 : 0), 0);
+
+    return {
+      activeMonitoredCerts: cmeta,
+      archivedMonitoredCerts: cmeta,
+      installedMonioredCerts: cinst,
+      activeWebConfiguration: actives,
+      disableWebConfiguration: disabled,
+    };
+  },
   async sslStats() {
     const cmeta = await sslio.list();
     const cinst = await sites.findAllCert();
