@@ -412,3 +412,52 @@ export default class WebSites {
     return domain.endsWith(baseDomain) && domain.split(".").length === baseDomain.split(".").length + 1;
   }
 }
+
+// const dns = require("dns").promises;
+
+// async function extendedLookup(domain) {
+//   const strategies = [
+//     { type: "A", method: () => dns.resolve4(domain) },
+//     { type: "AAAA", method: () => dns.resolve6(domain) },
+//     {
+//       type: "CNAME",
+//       method: async () => {
+//         const cnames = await dns.resolveCname(domain);
+//         // Recursively resolve the CNAME target
+//         const resolved = await extendedLookup(cnames[0]);
+//         return resolved.addresses;
+//       },
+//     },
+//     { type: "NS", method: () => dns.resolveNs(domain) },
+//     { type: "A", method: () => dns.resolve4(domain) },
+//     { type: "AAAA", method: () => dns.resolve6(domain) },
+//     {
+//       type: "CNAME",
+//       method: async () => {
+//         const cnames = await dns.resolveCname(domain);
+//         return await extendedLookup(cnames[0]).then((r) => r.addresses);
+//       },
+//     },
+//     { type: "NS", method: () => dns.resolveNs(domain) },
+//     {
+//       type: "MX->A",
+//       method: async () => {
+//         const mxRecords = await dns.resolveMx(domain);
+//         if (mxRecords.length === 0) throw new Error("No MX records");
+//         const resolved = await dns.resolve4(mxRecords[0].exchange);
+//         return resolved;
+//       },
+//     },
+//   ];
+
+//   for (const strategy of strategies) {
+//     try {
+//       const addresses = await strategy.method();
+//       return { type: strategy.type, addresses };
+//     } catch (_) {
+//       // Silently continue to next strategy
+//     }
+//   }
+
+//   throw new Error(`All resolution strategies failed for ${domain}`);
+// }
