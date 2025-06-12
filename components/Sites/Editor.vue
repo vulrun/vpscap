@@ -15,7 +15,17 @@ const dialogOpen = ref(false);
 const isSubmitting = ref(false);
 
 const configTypes = ["serve", "proxy", "redirect"];
-const SiteConfSchema = z.object({
+const AddSiteConfSchema = z.object({
+  confType: z.enum(configTypes).describe("Configuration Type").default(configTypes?.[0]),
+  domain: z
+    .string()
+    .trim()
+    .describe("Domains & Aliases")
+    .refine((val) => sanitizeDomains(val).length, { message: "Domains must be in valid format" }),
+  target: z.string().trim().min(10).describe("Target Location"),
+  enableIndexing: z.boolean().default(false).describe("Enable Auto Indexing"),
+});
+const EditSiteConfSchema = z.object({
   confType: z.enum(configTypes).describe("Configuration Type").default(configTypes?.[0]),
   domain: z
     .string()
@@ -27,6 +37,8 @@ const SiteConfSchema = z.object({
   enableSSL: z.boolean().default(false).describe("Enable SSL"),
   forceSSL: z.boolean().default(false).describe("Force SSL"),
 });
+
+const SiteConfSchema = isEdit ? EditSiteConfSchema : AddSiteConfSchema;
 
 const dependencies = [
   {
@@ -100,7 +112,7 @@ async function onSubmit(formData) {
         <DialogFooter class="flex flex-row items-center gap-2">
           <div class="flex-1">
             <RotatingText v-if="isSubmitting" :delay="2000" class="font-medium lowercase text-sm text-green-700" />
-            <span v-else-if="errors.length > 0" class="font-medium text-sm text-red-600">{{ errors.join(" ") }}</span>
+            <span v-else-if="errors.length > 0" class="font-medium text-sm text-red-600 text-justify" v-html="markdownToHtmlLite(errors.join(' '))"></span>
           </div>
           <DialogClose as-child>
             <Button type="button" variant="secondary" class="w-20 border border-gray-300">Close</Button>

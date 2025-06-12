@@ -62,7 +62,7 @@ const availableSiteCols = [
             <PlusIcon />
           </HintButton>
         </SitesEditor>
-        <ConfirmAction :class="['text-gray-700']" action="rebuildAllSites" @update:list="() => availableSites?.reload.value()" asChild>
+        <ConfirmAction :class="['text-gray-700']" action="rebuildAllSites" @update:list="() => availableSites?.reload.value()" title="Are you sure to rebuild all site configurations?" asChild>
           <HintButton title="Rebuild All" variant="outline" size="sm" class="relative hstack bg-background text-muted-foreground h-10 w-10 [&_svg]:size-4">
             <ReplaceAllIcon />
           </HintButton>

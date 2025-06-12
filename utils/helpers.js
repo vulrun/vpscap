@@ -279,3 +279,24 @@ export function sanitizeDomains(val) {
 export function toArray(data) {
   return [].concat(data).filter(Boolean);
 }
+
+export function markdownToHtmlLite(text) {
+  let html = text;
+
+  // Underline: __text__
+  html = html.replace(/__(.*?)__/g, "<u>$1</u>");
+
+  // Strikethrough: ~~text~~
+  html = html.replace(/~~(.*?)~~/g, "<del>$1</del>");
+
+  // Bold: **text**
+  html = html.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+
+  // Italic: *text* or _text_
+  html = html.replace(/\*(.*?)\*/g, "<em>$1</em>");
+  html = html.replace(/_(.*?)_/g, "<em>$1</em>");
+
+  // Inline Code: `code`
+  html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
+  return html;
+}

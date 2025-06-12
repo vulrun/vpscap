@@ -75,6 +75,12 @@ const table = useVueTable({
 
 const columns = computed(() => table.getAllColumns().filter((column) => typeof column.accessorFn !== "undefined" && column.getCanHide()));
 const isFiltered = computed(() => globalFilter.value.length > 0 || table.getState().columnFilters.length > 0);
+const visibleRows = computed(() => {
+  const rows = table.getRowModel().rows;
+  const sticky = rows.filter((row) => row.original.confName === "_default.conf");
+  const others = rows.filter((row) => row.original.confName !== "_default.conf");
+  return [...sticky, ...others];
+});
 
 function clearAllFilters() {
   globalFilter.value = "";
@@ -132,8 +138,8 @@ onMounted(() => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          <template v-if="table.getRowModel().rows?.length">
-            <TableRow v-for="row in table.getRowModel().rows" :key="row.id" :data-state="row.getIsSelected() && 'selected'">
+          <template v-if="visibleRows?.length">
+            <TableRow v-for="row in visibleRows" :key="row.id" :data-state="row.getIsSelected() && 'selected'">
               <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id" :class="cn(cell.column.columnDef.cellParentClass)">
                 <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
               </TableCell>

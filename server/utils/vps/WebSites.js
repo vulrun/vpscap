@@ -188,14 +188,12 @@ export default class WebSites {
     const file = fsPath.parse(path);
     return { path, file };
   }
-
   #generateFilename(domain) {
     domain = domain.replace(/^www\./, "").toLowerCase();
     domain = domain.replace(/[^0-9a-z]/g, " ");
     const randomStr = Math.random().toString(36).substring(2, 6);
     return `${lo.snakeCase(domain)}_${randomStr}`;
   }
-
   async #setConfData(args) {
     if (!args?.confPath) {
       args.confPath = `${this.#confDirPath}/${this.#generateFilename(args?.domain)}${args?.isDumped ? ".dump" : ".conf"}`;
@@ -203,14 +201,13 @@ export default class WebSites {
 
     if (!process?.env?.APP_ENV?.startsWith("dev")) {
       const dnsData = await this.#dnsIpLookup(args?.domain);
-      if (!dnsData?.status) throw new Error(`DNS A record for [${args?.domain}] must be pointed to ${dnsData?.vpsIp}`);
+      if (!dnsData?.status) throw new Error(`DNS A record for \`__**${args?.domain}**__\` must be pointed to \`**${dnsData?.vpsIp}**\` instead of \`**${dnsData?.dnsIp}\`**.`);
     }
 
     const result = await this.nginx.writeConf(args?.confPath, args);
     await this.nginxReload();
     return result;
   }
-
   async #setDefaultConf(args) {
     const confPath = this.#confDirPath + "/_default.conf";
 
@@ -227,7 +224,6 @@ export default class WebSites {
     await this.nginxReload();
     return result;
   }
-
   async #dnsIpLookup(domain) {
     domain = this.nginx.sanitizeDomains(domain)?.[0];
 
@@ -247,7 +243,6 @@ export default class WebSites {
       domain,
     };
   }
-
   async #checkDomainsInUse(domains, options) {
     domains = this.nginx.sanitizeDomains(domains);
     if (domains.length <= 0) throw new Error("Domains are missing");
@@ -269,7 +264,6 @@ export default class WebSites {
   }
 
   // =========== certificate methods ===========   //
-
   async installCert(domain) {
     if (process?.env?.APP_ENV?.startsWith("dev")) {
       console.log(`🗿 Skipping, certificate installation on development server is not possible`);
@@ -326,7 +320,6 @@ export default class WebSites {
     await this.sslAcme.initialize();
     return await Promise.allSettled(promises);
   }
-
   async findAllCert() {
     try {
       const installed = await this.sslAcme.listCertificates();
@@ -370,7 +363,6 @@ export default class WebSites {
 
     return lo.filter(certs, (c) => !c?.isExpired && domain.includes(c?.domain));
   }
-
   #unwindCerts(certs) {
     const domainsMap = [];
     for (const cert of certs) {
@@ -393,7 +385,6 @@ export default class WebSites {
 
     return domainsMap;
   }
-
   #daysLeft(validTo) {
     const currentDate = new Date();
     const validToDate = new Date(validTo);
@@ -401,7 +392,6 @@ export default class WebSites {
     const diff_in_ms = validToDate - currentDate;
     return Math.floor(diff_in_ms / DAY_IN_MS);
   }
-
   #isWildcardMatch(domain, wildcard) {
     if (domain === wildcard) return true;
     if (!wildcard.startsWith("*.")) return false;
