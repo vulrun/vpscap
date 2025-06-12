@@ -140,7 +140,7 @@ onMounted(() => {
         <TableBody>
           <template v-if="visibleRows?.length">
             <TableRow v-for="row in visibleRows" :key="row.id" :data-state="row.getIsSelected() && 'selected'">
-              <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id" :class="cn(cell.column.columnDef.cellParentClass)">
+              <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id" :class="cn(cell.column.columnDef.cellClass)">
                 <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
               </TableCell>
             </TableRow>

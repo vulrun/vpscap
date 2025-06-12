@@ -22,7 +22,7 @@ useHead({
 
 <template>
   <NuxtLayout>
-    <Sonner />
+    <Sonner position="top-right" />
     <NuxtLoadingIndicator color="#000" />
     <NuxtPage />
   </NuxtLayout>

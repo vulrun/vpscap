@@ -22,8 +22,8 @@ export default class SslMeta {
       if (!domain) throw new Error("Domain is missing");
 
       // return cache saved
-      const cached = this.cacheDb.selectDataKey(domain, true).getData();
-      if (cached) return cached;
+      const cached = this.cacheDb.selectDataKey(domain, true).getData(null, { raw: true });
+      if (cached?.value) return { ...cached.value, cachedAt: cached.addedAtIso };
 
       const options = {
         host: domain,
@@ -79,7 +79,7 @@ export default class SslMeta {
       cert.remarks = this.#remarks(cert);
 
       // cache result
-      if (process?.env?.APP_ENV?.startsWith("dev")) {
+      if (true || process?.env?.APP_ENV?.startsWith("dev")) {
         this.cacheDb.selectDataKey(domain, true).setData(cert, "1d");
       }
 
@@ -87,7 +87,7 @@ export default class SslMeta {
     }
   }
 
-  async fetchInBulk(domains) {
+  fetchInBulk(domains) {
     // make it lowercase for case insensitivity
     if (domains && Array.isArray(domains)) {
       domains = domains.map((domain) => domain.toLowerCase());
@@ -95,12 +95,10 @@ export default class SslMeta {
 
     // fetch and merge data
     domains = cleanArray(this.db.getData(), domains);
-
     if (!Array.isArray(domains) && domains.length <= 0) return [];
 
     // Get certificates for all domains in parallel
-    const result = await Promise.all(domains.map((d) => this.fetch(d)));
-    return result;
+    return Promise.all(domains.map((domain) => this.fetch(domain)));
 
     // const final = {
     //   resolved: result?.filter((res) => res?.status !== "rejected").map((res) => res?.value),
@@ -108,7 +106,7 @@ export default class SslMeta {
     // };
   }
 
-  async list() {
+  list() {
     return cleanArray(this.db.getData());
   }
 
@@ -151,6 +149,23 @@ export default class SslMeta {
     this.db.setData(savedDomains);
     this.deletedDb.setData(deletedDomains);
     domains.map((domain) => this.cacheDb.selectDataKey(domain, true).deleteData());
+  }
+
+  refresh(domains) {
+    if (!Array.isArray(domains)) {
+      throw new Error("Input must be an array");
+    }
+    // make it lowercase for case insensitivity
+    domains = domains.map((domain) => domain.toLowerCase());
+
+    // clear cache, fetch result
+    domains.map((domain) => this.cacheDb.selectDataKey(domain, true).deleteData());
+    return Promise.all(domains.map((domain) => this.fetch(domain)));
+  }
+
+  purgeCache() {
+    // delete all cache entries
+    this.cacheDb.deleteAllData();
   }
 
   #daysLeft(validTo) {

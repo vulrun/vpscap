@@ -279,7 +279,7 @@ export default class JsonDB {
   }
 
   deleteAll() {
-    this.json.write("{}");
+    this.json.write({});
     return true;
   }
 

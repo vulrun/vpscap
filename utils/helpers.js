@@ -152,15 +152,6 @@ export function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms || 0));
 }
 
-export function renderVNodeToString(vnode) {
-  const vm = new Vue({ render: (h) => vnode });
-
-  const container = document.createElement("div");
-  vm.$mount(container);
-
-  return container.innerHTML;
-}
-
 export function createAvatarInitials(name) {
   const words = `${name || ""}`.trim().split(" ").slice(0, 2);
   const initials = words.map((word) => word.charAt(0)).join("");

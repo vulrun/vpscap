@@ -275,7 +275,6 @@ export default class NginxHandler {
         proxy_pass: obj?.target,
         proxy_set_header: [
           // proxy headers
-          "Host $http_host",
           "X-Real-IP $remote_addr",
           "X-Forwarded-For $proxy_add_x_forwarded_for",
           "X-Forwarded-Proto $scheme",

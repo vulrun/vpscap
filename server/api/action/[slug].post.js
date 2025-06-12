@@ -14,6 +14,14 @@ const controllers = {
     sslm.delete(body?.domains);
     return "Deleted successfully";
   },
+  refreshMonitoredCert(body) {
+    sslm.refresh(body?.domains);
+    return "Refreshed";
+  },
+  purgeMonitoredCertsCache() {
+    sslm.purgeCache();
+    return "Cache Purged";
+  },
 
   async createInstalledCert(body) {
     await site.installCert(body?.domains);

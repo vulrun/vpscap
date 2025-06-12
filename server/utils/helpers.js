@@ -136,6 +136,9 @@ class ExtendedJsonDb extends JsonDB {
 
   setData(data, ttl) {
     const doc = {};
+    const now = new Date();
+    doc.addedAtMs = now.valueOf();
+    doc.addedAtIso = now.toISOString();
 
     if (ttl) {
       const ttlMs = ms("" + ttl);
@@ -146,10 +149,10 @@ class ExtendedJsonDb extends JsonDB {
     }
 
     doc.value = data;
-    super.set(this.dataKey, doc);
+    return super.set(this.dataKey, doc);
   }
 
-  getData(defaults) {
+  getData(defaults, options) {
     const doc = super.get(this.dataKey);
     if (!doc) return defaults || null;
 
@@ -160,11 +163,17 @@ class ExtendedJsonDb extends JsonDB {
       this.deleteData();
       return defaults || null;
     }
+
+    if (options?.raw) return doc;
     return doc?.value || defaults || null;
   }
 
   deleteData() {
-    super.delete(this.dataKey);
+    return super.delete(this.dataKey);
+  }
+
+  deleteAllData() {
+    return super.deleteAll();
   }
 }
 

@@ -287,14 +287,14 @@ export default class WebSites {
 
     const sites = await this.list();
     const site = sites.find((s) => s?.domain === domain?.[0]);
-    await this.update(site?.confId, {
+    this.update(site?.confId, {
       enableIndexing: site?.enableIndexing,
       enableSSL: false,
       forceSSL: site?.forceSSL,
       confType: site?.confType,
       domain: site?.domain,
       target: site?.target,
-    });
+    }).then();
   }
   async renewCerts() {
     if (process?.env?.APP_ENV?.startsWith("dev")) {

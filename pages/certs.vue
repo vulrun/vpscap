@@ -1,12 +1,13 @@
 <script setup>
 definePageMeta({ layout: "dashboard" });
-import { ArrowUpDown, ChevronDown, CommandIcon, SearchIcon, PlusIcon, RefreshCwIcon, SortDesc, TrashIcon } from "lucide-vue-next";
+import { ArrowUpDown, ChevronDown, CommandIcon, SearchIcon, PlusIcon, RefreshCwIcon, SortDesc, TrashIcon, ListRestartIcon } from "lucide-vue-next";
 import HoverText from "@/components/HoverText.vue";
 import HintButton from "@/components/HintButton.vue";
 import ConfirmAction from "@/components/ConfirmAction.vue";
 import DataTableColumnHeader from "@/components/DataTable/ColumnHeader.vue";
 import CertsRowExpiry from "@/components/Certs/RowExpiry.vue";
 import CertsRowDomain from "@/components/Certs/RowDomain.vue";
+import CertsRowAction from "@/components/Certs/RowAction.vue";
 
 const viewMode = useLocalRef("certs-view-mode", "monitor");
 const setViewMode = (value) => (viewMode.value = value === "install" ? "install" : "monitor");
@@ -20,8 +21,8 @@ onMounted(() => {
   if (route?.query?.install) return setViewMode("install");
   if (route?.query?.monitor) return setViewMode("monitor");
 });
-
 const monitoredCerts = useApiFetch(`/api/fetch/monitoredCerts`);
+const monitoredCertsCachedAt = computed(() => (monitoredCerts?.isLoading?.value ? null : monitoredCerts?.result?.value?.[0]?.cachedAt));
 const monitoredCols = [
   {
     accessorKey: "domain",
@@ -44,10 +45,10 @@ const monitoredCols = [
     header: ({ column }) => h(DataTableColumnHeader, { column, title: "Remarks" }),
     cell: ({ row }) => h(CertsRowExpiry, { row }),
   },
-  { id: "expiresAt" },
   {
     id: "actions",
-    cell: ({ row }) => ConfirmDeleteAction({ action: "deleteMonitoredCert", domains: toArray(row?.original?.domain), onUpdate: () => monitoredCerts.reload.value() }),
+    cellClass: "flex",
+    cell: ({ row }) => h(CertsRowAction, { row, viewMode, "onUpdate:list": () => monitoredCerts.reload.value() }),
   },
 ];
 
@@ -59,9 +60,9 @@ const installedCols = [
   //   cell: ({ row }) => h("span", { class: "font-mono" }, row?.original?.serialNo),
   // },
   {
-    accessorKey: "certName",
+    accessorKey: "domain",
     header: ({ column }) => h(DataTableColumnHeader, { column, title: "Domain" }),
-    cell: ({ row }) => h(CertsRowDomain, { row, class: "", domains: toArray(row?.original?.certName) }),
+    cell: ({ row }) => h(CertsRowDomain, { row, class: "", domains: toArray(row?.original?.domain) }),
   },
   {
     accessorKey: "altNames",
@@ -89,25 +90,9 @@ const installedCols = [
   { id: "dirName" },
   {
     id: "actions",
-    cell: ({ row }) => ConfirmDeleteAction({ action: "deleteInstalledCert", domains: toArray(row?.original?.certName), onUpdate: () => installedCerts.reload.value() }),
+    cell: ({ row }) => h(CertsRowAction, { row, viewMode, "onUpdate:list": () => installedCerts.reload.value() }),
   },
 ];
-
-function ConfirmDeleteAction({ action, domains, onUpdate }) {
-  const TrashButton = hx(HintButton, {
-    variant: "outline",
-    class: "relative hstack size-7 rounded p-0 [&_svg]:size-4 border border-red-400 text-red-400 hover:text-red-400 hover:bg-red-100",
-    title: `Delete ${domains.join(", ")}`,
-    _children: () => [h(TrashIcon)],
-  });
-
-  return hx(ConfirmAction, {
-    action,
-    actionPayload: { domains },
-    "onUpdate:list": onUpdate,
-    _children: () => [TrashButton],
-  });
-}
 </script>
 
 <template>
@@ -128,7 +113,12 @@ function ConfirmDeleteAction({ action, domains, onUpdate }) {
         <div class="hstack items-start justify-between">
           <div class="vstack gap-1">
             <h3 class="text-gray-700 text-md font-semibold leading-none tracking-tight">Monitored Certificates</h3>
-            <p class="text-gray-500 text-sm">Stay ahead of expiration dates with timely tracking alerts for your important certificates.</p>
+            <p class="text-gray-500 text-sm">
+              Stay ahead of expiration dates with timely tracking alerts for your important certificates.
+              <span class="mx-1" v-if="monitoredCertsCachedAt"
+                >Last cached at: <HoverText class="font-bold" :hoverText="monitoredCertsCachedAt" :innerText="getRelativeTime(monitoredCertsCachedAt)"
+              /></span>
+            </p>
           </div>
 
           <div class="hstack gap-2">
@@ -140,6 +130,17 @@ function ConfirmDeleteAction({ action, domains, onUpdate }) {
                 <PlusIcon />
               </HintButton>
             </CertsAddDialog>
+            <ConfirmAction
+              :class="['text-gray-700']"
+              action="purgeMonitoredCertsCache"
+              @update:list="() => monitoredCerts?.reload.value()"
+              title="Are you sure to hard refresh all certificates?"
+              asChild
+            >
+              <HintButton title="Hard Refresh" variant="outline" size="sm" class="relative hstack bg-background text-muted-foreground h-10 w-10 [&_svg]:size-4">
+                <ListRestartIcon />
+              </HintButton>
+            </ConfirmAction>
           </div>
         </div>
 
@@ -157,9 +158,6 @@ function ConfirmDeleteAction({ action, domains, onUpdate }) {
           </div>
 
           <div class="hstack gap-2">
-            <!-- <HintButton title="Search" variant="outline" size="sm" class="relative hstack bg-background text-muted-foreground h-10 w-10 [&_svg]:size-4" @click.prevent="alert('123456')">
-            <SearchIcon />
-          </HintButton> -->
             <HintButton title="Refresh" variant="outline" size="sm" class="relative hstack bg-background text-muted-foreground h-10 w-10 [&_svg]:size-4" @click.prevent="installedCerts?.reload.value">
               <RefreshCwIcon />
             </HintButton>
