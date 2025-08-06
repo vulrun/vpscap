@@ -101,7 +101,7 @@ function doLogout() {
 
         <NuxtLink
           to="/guide"
-          class="cursor-pointer relative flex select-none items-center rounded-sm gap-2 px-2 py-1 h-10 text-sm outline-none transition-colors hover:bg-gray-800 [&>svg]:size-4 [&>svg]:shrink-0"
+          class="cursor-pointer relative flex select-none items-center rounded-sm gap-2 px-2 py-1 h-10 text-sm outline-hidden transition-colors hover:bg-gray-800 [&>svg]:size-4 [&>svg]:shrink-0"
         >
           <MonitorCheckIcon />
           Installation Guide
@@ -109,14 +109,14 @@ function doLogout() {
         <a
           href="https://github.com/vulrun/vpscap"
           target="_blank"
-          class="cursor-pointer relative flex select-none items-center rounded-sm gap-2 px-2 py-1 h-10 text-sm outline-none transition-colors hover:bg-gray-800 [&>svg]:size-4 [&>svg]:shrink-0"
+          class="cursor-pointer relative flex select-none items-center rounded-sm gap-2 px-2 py-1 h-10 text-sm outline-hidden transition-colors hover:bg-gray-800 [&>svg]:size-4 [&>svg]:shrink-0"
         >
           <GithubIcon class="size-4" />
           Github
         </a>
         <div
           @click.prevent="doLogout"
-          class="cursor-pointer relative flex select-none items-center rounded-sm gap-2 px-2 py-1 h-10 text-sm outline-none transition-colors hover:bg-gray-800 [&>svg]:size-4 [&>svg]:shrink-0"
+          class="cursor-pointer relative flex select-none items-center rounded-sm gap-2 px-2 py-1 h-10 text-sm outline-hidden transition-colors hover:bg-gray-800 [&>svg]:size-4 [&>svg]:shrink-0"
         >
           <LogOutIcon />
           Log out
@@ -124,12 +124,12 @@ function doLogout() {
       </div>
 
       <!-- <DropdownMenu>
-        <DropdownMenuTrigger class="w-full hstack p-2 gap-2 rounded-md shadow transition-all text-gray-200 bg-gray-50/10 hover:bg-gray-50/20 data-[state=open]:bg-gray-50/20">
+        <DropdownMenuTrigger class="w-full hstack p-2 gap-2 rounded-md shadow-sm transition-all text-gray-200 bg-gray-50/10 hover:bg-gray-50/20 data-[state=open]:bg-gray-50/20">
           <LayoutsAvatarDiv />
           <ChevronsUpDownIcon class="ml-auto size-4" />
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent class="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-sm" side="bottom" align="end" :side-offset="4">
+        <DropdownMenuContent class="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-sm" side="bottom" align="end" :side-offset="4">
           <DropdownMenuLabel class="p-0 font-normal">
             <div class="flex items-center px-1 py-1.5 text-left text-sm">
               <LayoutsAvatarDiv />

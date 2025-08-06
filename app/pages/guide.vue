@@ -21,7 +21,7 @@ function changeStep(idx) {
   <div class="w-full max-w-screen-ld mx-auto space-y-4">
     <div class="hstack relative">
       <MainHeading title="Welcome folks!">Here&apos;s the steps, to make your server ready for the deployments!</MainHeading>
-      <Button variant="outline" class="absolute right-0 top-0 border-gray-300 shadow-xs hover:bg-transparent hover:border-gray-400" @click.prevent="refresh">Verify</Button>
+      <Button variant="outline" class="absolute right-0 top-0 border-gray-300 shadow-2xs hover:bg-transparent hover:border-gray-400" @click.prevent="refresh">Verify</Button>
     </div>
 
     <div class="w-full grid md:grid-cols-[320px_1fr] lg:grid-cols-[400px_1fr]">

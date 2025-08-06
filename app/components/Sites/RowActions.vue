@@ -3,7 +3,7 @@ import { EllipsisIcon, FilePenLineIcon, TrashIcon, ToggleLeftIcon, ToggleRightIc
 const { row } = defineProps(["row"]);
 const emits = defineEmits(["update:list"]);
 const dropdownItemClass = ref(
-  "relative flex cursor-pointer select-none items-center rounded-sm gap-2 px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-inherit [&>svg]:size-4 [&>svg]:shrink-0 text-xs w-full disabled:pointer-events-none disabled:opacity-20 font-medium uppercase"
+  "relative flex cursor-pointer select-none items-center rounded-sm gap-2 px-2 py-1.5 text-sm outline-hidden transition-colors focus:bg-accent focus:text-inherit [&>svg]:size-4 [&>svg]:shrink-0 text-xs w-full disabled:pointer-events-none disabled:opacity-20 font-medium uppercase"
 );
 </script>
 
