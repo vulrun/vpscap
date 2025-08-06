@@ -1,23 +1,4 @@
-export function $persist(key, value) {
-  // set the values
-  if (typeof value !== "undefined") {
-    if (value === null) {
-      localStorage.removeItem(key);
-    } else if (typeof value === "string") {
-      localStorage.setItem(key, value);
-    } else {
-      localStorage.setItem(key, JSON.stringify(value));
-    }
-  }
-
-  // get the values
-  const stored = localStorage.getItem(key);
-  try {
-    return JSON.parse(stored);
-  } catch (e) {
-    return stored;
-  }
-}
+import axios from "axios";
 
 export function ms(str) {
   str = String(str);
@@ -78,6 +59,25 @@ export function ms(str) {
   }
 }
 
+export function cleanStatusText(str) {
+  if (!str) return str;
+
+  str = str.replace(/[^a-zA-Z0-9 ]/g, "");
+  str = str.replace(/\s+/g, " ").trim();
+  str = str
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+  return str;
+}
+
+export function fetchApi(...args) {
+  return axios
+    .create()(...args)
+    .then((res) => res?.data)
+    .catch((err) => err);
+}
+
 export function isDate(date) {
   date = new Date(date);
   return date instanceof Date && !isNaN(date);
@@ -126,28 +126,6 @@ export function deep_copy(obj) {
   return JSON.parse(JSON.stringify(obj));
 }
 
-export function changeHref(path) {
-  if (window.history.pushState) {
-    window.history.pushState({}, "", path);
-  }
-  return;
-}
-
-export function getViewport() {
-  return {
-    width: Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0),
-    height: Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0),
-  };
-}
-
-export function isWebApp() {
-  if (/iPhone|iPad|iPod/i.test(window.navigator?.userAgent)) {
-    return "standalone" in window.navigator && window.navigator.standalone;
-  }
-
-  return window.matchMedia("(display-mode: standalone)").matches;
-}
-
 export function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms || 0));
 }
@@ -160,7 +138,7 @@ export function createAvatarInitials(name) {
 
 export function encodeUserPass(user, pass) {
   if (!user) throw new Error("User is needed");
-  if (!pass) throw new Error("User is needed");
+  if (!pass) throw new Error("Pass is needed");
 
   return hexEncode(JSON.stringify({ username: user, password: pass }));
 }
@@ -175,20 +153,68 @@ export function decodeUserPass(str) {
   }
 }
 
-export function hexEncode(str) {
-  let hexString = "";
-  for (let i = 0; i < str.length; i++) {
-    hexString += str.charCodeAt(i).toString(16).padStart(2, "0");
-  }
-  return hexString;
+export function isValidHex(str) {
+  return /^[0-9a-fA-F]*$/.test(str) && str.length % 2 === 0;
+}
+
+export function hexEncode(inputData) {
+  const inputStr = String(inputData ?? "").replace(/\r|\n/g, "");
+  if (!inputStr) return "";
+
+  const byteArray = Array.prototype.map.call(inputStr, (c) => c.charCodeAt(0).toString(16).padStart(2, "0"));
+  return byteArray.join("");
 }
 
 export function hexDecode(hexString) {
-  let str = "";
-  for (let i = 0; i < hexString.length; i += 2) {
-    str += String.fromCharCode(parseInt(hexString.substr(i, 2), 16));
+  const hexInput = String(hexString ?? "").replace(/\r|\n/g, "");
+
+  if (!hexInput) return "";
+  if (!isValidHex(hexInput)) {
+    throw new Error(`Invalid hex string: ${hexInput}`);
   }
-  return str;
+
+  const byteArray = hexInput.match(/.{1,2}/g).map((c) => parseInt(c, 16));
+  return String.fromCharCode.apply(null, byteArray);
+}
+
+export function debounce(fn, delay) {
+  let timer;
+  return function (...args) {
+    if (timer) clearTimeout(timer);
+
+    timer = setTimeout(async () => {
+      try {
+        const result = fn.apply(this, args);
+        if (result instanceof Promise) {
+          await result;
+        }
+      } catch (err) {
+        console.error("Error executing debounced function:", err);
+      }
+    }, delay);
+  };
+}
+
+export function cleanArray() {
+  return [].concat(...arguments).filter(Boolean);
+}
+
+export function toObject(data, key, val, keyFunc, valFunc) {
+  const isStringValid = (tmp) => typeof tmp === "string" && tmp.length > 0;
+
+  if (!Array.isArray(data)) throw new Error("INVALID_DATA");
+  if (data.length <= 0) return {};
+  if (!isStringValid(key)) throw new Error("INVALID_KEY");
+
+  const newObj = {};
+  for (const item of data) {
+    let k = String(item[key]);
+    let v = isStringValid(val) ? item[val] : item;
+    if (typeof keyFunc === "function") k = keyFunc(k);
+    if (typeof valFunc === "function") v = valFunc(v);
+    newObj[k] = v;
+  }
+  return newObj;
 }
 
 export function extendObj(target, ...sources) {
@@ -249,28 +275,6 @@ export function extendObj(target, ...sources) {
   return target;
 }
 
-export function sanitizeDomains(val) {
-  if (!val) return [];
-
-  const validDomain = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/i;
-  val = String(val || "")
-    // domain with spaces separated
-    .replace(/[^a-z0-9\-\.]/gi, " ")
-    // remove multiple spaces
-    .replace(/\s+/g, " ")
-    // to array
-    .split(" ");
-
-  // remove duplicates, filter valid domains, then sorting
-  val = Array.from(new Set(val)).filter((site) => validDomain.test(site));
-  val.sort();
-  return val;
-}
-
-export function toArray(data) {
-  return [].concat(data).filter(Boolean);
-}
-
 export function markdownToHtmlLite(text) {
   let html = text;
 
@@ -290,4 +294,22 @@ export function markdownToHtmlLite(text) {
   // Inline Code: `code`
   html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
   return html;
+}
+
+export function sanitizeDomains(val) {
+  if (!val) return [];
+
+  val = String(val || "")
+    // domain with spaces separated
+    .replace(/[^a-z0-9\-\.]/gi, " ")
+    // remove multiple spaces
+    .replace(/\s+/g, " ")
+    // to array
+    .split(" ");
+
+  // remove duplicates, filter valid domains, then sorting
+  const validDomainRegex = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/i;
+  val = Array.from(new Set(val)).filter((site) => validDomainRegex.test(site));
+  val.sort();
+  return cleanArray(val);
 }

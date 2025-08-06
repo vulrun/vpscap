@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { buttonVariants } from '@/components/ui/button'
+import { buttonVariants } from '@@/components/ui/button'
 import { cn } from '~/utils/utils'
 import { ChevronRightIcon } from '@radix-icons/vue'
 import { CalendarNext, type CalendarNextProps, useForwardProps } from 'radix-vue'

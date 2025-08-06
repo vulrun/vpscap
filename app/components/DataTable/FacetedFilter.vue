@@ -1,6 +1,6 @@
 <script setup>
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Separator } from "@/components/ui/separator";
+import { Popover, PopoverContent, PopoverTrigger } from "@@/components/ui/popover";
+import { Separator } from "@@/components/ui/separator";
 import { cn } from "@/utils/utils";
 
 import { CheckIcon, CirclePlusIcon } from "lucide-vue-next";

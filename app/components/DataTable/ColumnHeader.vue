@@ -1,8 +1,8 @@
 <script setup>
 import { cn } from "@/utils/utils";
 import { ArrowDownIcon, ArrowUpIcon, ArrowDownUpIcon, EyeOffIcon } from "lucide-vue-next";
-import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Button } from "@@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@@/components/ui/dropdown-menu";
 
 const { column, title } = defineProps(["column", "title"]);
 const attrs = useAttrs();

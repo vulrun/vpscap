@@ -1,6 +1,4 @@
 <script setup>
-import { cn } from "@/utils/utils";
-
 const props = defineProps(["class", "delay", "values"]);
 const values = ref([]);
 const currentIndex = ref(0);

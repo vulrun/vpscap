@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import type { Table } from "@tanstack/vue-table";
-import type { Task } from "~/.experiments/data/schema";
-import { Button } from "@/components/ui/button";
+import type { Task } from "@@/.experiments/data/schema";
+import { Button } from "@@/components/ui/button";
 
-import { Input } from "@/components/ui/input";
+import { Input } from "@@/components/ui/input";
 import { EllipsisIcon } from "lucide-vue-next";
 import { computed } from "vue";
-import { priorities, statuses } from "~/.experiments/data/data";
+import { priorities, statuses } from "@@/.experiments/data/data";
 
 interface DataTableToolbarProps {
   table: Table<Task>;

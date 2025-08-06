@@ -4,7 +4,7 @@ import { toast } from "vue-sonner";
 import { LoaderCircleIcon } from "lucide-vue-next";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
-import { DependencyType } from "@/components/ui/auto-form/interface";
+import { DependencyType } from "@@/components/ui/auto-form/interface";
 
 const emits = defineEmits(["update:list"]);
 const props = defineProps(["class", "disabled", "conf", "asChild"]);

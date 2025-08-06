@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { Table } from "@tanstack/vue-table";
-import type { Task } from "~/.experiments/data/schema";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import type { Task } from "@@/.experiments/data/schema";
+import { Button } from "@@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@@/components/ui/select";
 import { ChevronLeftIcon, ChevronRightIcon, ChevronsLeftIcon, ChevronsRightIcon } from "lucide-vue-next";
 
 interface DataTablePaginationProps {

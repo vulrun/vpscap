@@ -1,5 +1,5 @@
 <script setup>
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@@/components/ui/table";
 import { valueUpdater } from "@/utils/utils";
 import {
   FlexRender,

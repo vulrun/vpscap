@@ -3,7 +3,7 @@ definePageMeta({ layout: "dashboard" });
 import { h, ref } from "vue";
 import { ArrowUpDown, ChevronDown } from "lucide-vue-next";
 import { valueUpdater } from "@/utils/utils";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@@/components/ui/table";
 import { FlexRender, getCoreRowModel, getExpandedRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useVueTable } from "@tanstack/vue-table";
 
 const props = defineProps(["data", "columns"]);

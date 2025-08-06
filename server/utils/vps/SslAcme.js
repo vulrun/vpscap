@@ -4,7 +4,7 @@ import fs from "fs-extra";
 // import fs from "node:fs";
 // import os from "node:os";
 import lo from "lodash";
-import shell from "@/server/utils/shell";
+import shell from "@@/server/utils/shell";
 import acme from "acme-client";
 import forge from "node-forge";
 import crypto from "node:crypto";

@@ -1,1 +1,1 @@
-export { default as Sonner } from "./Sonner.vue";
+export { default as Sonner } from "@@/components/ui/sonner/Sonner.vue";

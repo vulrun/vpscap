@@ -6,10 +6,9 @@ import fs from "fs-extra";
 import dns from "node:dns/promises";
 import lo from "lodash";
 import { z } from "zod";
-import * as envs from "@/server/utils/bin/env.js";
-import shell from "@/server/utils/shell";
-import { extendObj } from "@/server/utils/helpers.js";
-import NginxParser from "@/server/utils/NginxParser";
+import * as envs from "@@/server/utils/bin/env.js";
+import shell from "@@/server/utils/shell";
+import NginxParser from "@@/server/utils/NginxParser";
 
 const cleanArray = (...val) => [].concat(...val).filter(Boolean);
 const NUXT_LOCAL_DB_DIR = process?.env?.NUXT_LOCAL_DB_DIR || ".localdb/";
@@ -21,24 +20,6 @@ export default class NginxHandler {
   constructor(args) {
     this.nginx = new NginxParser();
     this.webSites = args?.webSites;
-  }
-
-  sanitizeDomains(val) {
-    if (!val) return [];
-
-    val = String(val || "")
-      // domain with spaces separated
-      .replace(/[^a-z0-9\-\.]/gi, " ")
-      // remove multiple spaces
-      .replace(/\s+/g, " ")
-      // to array
-      .split(" ");
-
-    const validDomainRegex = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/i;
-    // remove duplicates, filter valid domains, then sorting
-    val = Array.from(new Set(val)).filter((site) => validDomainRegex.test(site));
-    val.sort();
-    return cleanArray(val);
   }
 
   validateTarget({ enableIndexing, enableSSL, forceSSL, confType, domain, target }) {
@@ -80,7 +61,7 @@ export default class NginxHandler {
 
   async validateAndSanitize(input) {
     if (!input) throw new Error("INVALID_INPUT_PAYLOAD");
-    input.domain = this.sanitizeDomains(input?.domain);
+    input.domain = sanitizeDomains(input?.domain);
 
     const ConfSchema = z
       .object({
@@ -144,7 +125,7 @@ export default class NginxHandler {
       const config = this.nginx.toJSON(raw);
       if (!config?.server) return null;
 
-      const domain = this.sanitizeDomains(config?.server?.server_name || "").join(" ");
+      const domain = sanitizeDomains(config?.server?.server_name || "").join(" ");
       const sslCert = String(config?.server?.ssl_certificate).match(/letsencrypt\/live\/([^\/]+)\//i)?.[1] || null;
       const confMeta = await this.#fetchConfMeta(config?.server);
       return { ...confMeta, domain, sslCert };
@@ -159,7 +140,7 @@ export default class NginxHandler {
     obj = JSON.parse(JSON.stringify(obj));
 
     // converting the input domain to a array of sanitized domains
-    obj.domain = this.sanitizeDomains(obj?.domain);
+    obj.domain = sanitizeDomains(obj?.domain);
 
     // checking for validations
     if (obj?.domain?.length <= 0) throw new Error("Domain is missing");

@@ -1,10 +1,17 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
+import tsconfigPaths from "vite-tsconfig-paths";
+
 export default defineNuxtConfig({
-  compatibilityDate: "2024-11-01",
+  compatibilityDate: "2025-08-07",
   devtools: {
     enabled: !true,
   },
-  vite: {},
+  // dir: {
+  //   app: "app",
+  // },
+  // srcDir: ".",
+  vite: {
+    plugins: [tsconfigPaths()],
+  },
   build: {},
   modules: [
     //

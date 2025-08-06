@@ -1,12 +1,12 @@
 import type { InputComponents } from './interface'
-import AutoFormFieldArray from './AutoFormFieldArray.vue'
-import AutoFormFieldBoolean from './AutoFormFieldBoolean.vue'
-import AutoFormFieldDate from './AutoFormFieldDate.vue'
-import AutoFormFieldEnum from './AutoFormFieldEnum.vue'
-import AutoFormFieldFile from './AutoFormFieldFile.vue'
-import AutoFormFieldInput from './AutoFormFieldInput.vue'
-import AutoFormFieldNumber from './AutoFormFieldNumber.vue'
-import AutoFormFieldObject from './AutoFormFieldObject.vue'
+import AutoFormFieldArray from '@@/components/ui/auto-form/AutoFormFieldArray.vue'
+import AutoFormFieldBoolean from '@@/components/ui/auto-form/AutoFormFieldBoolean.vue'
+import AutoFormFieldDate from '@@/components/ui/auto-form/AutoFormFieldDate.vue'
+import AutoFormFieldEnum from '@@/components/ui/auto-form/AutoFormFieldEnum.vue'
+import AutoFormFieldFile from '@@/components/ui/auto-form/AutoFormFieldFile.vue'
+import AutoFormFieldInput from '@@/components/ui/auto-form/AutoFormFieldInput.vue'
+import AutoFormFieldNumber from '@@/components/ui/auto-form/AutoFormFieldNumber.vue'
+import AutoFormFieldObject from '@@/components/ui/auto-form/AutoFormFieldObject.vue'
 
 export const INPUT_COMPONENTS: InputComponents = {
   date: AutoFormFieldDate,

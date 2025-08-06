@@ -13,7 +13,7 @@ const isInstalled = computed(() => viewMode.value === "install");
       @update:list="emits('update:list', $event)"
       action="refreshMonitoredCert"
       :actionPayload="{
-        domains: toArray(row?.original?.domain),
+        domains: cleanArray(row?.original?.domain),
       }"
     >
       <HintButton
@@ -36,7 +36,7 @@ const isInstalled = computed(() => viewMode.value === "install");
       :title="`Are you sure to delete \`${isMonitored ? row?.original?.domain : isInstalled ? row?.original?.dirName : null}\` certificate?`"
       :action="isMonitored ? 'deleteMonitoredCert' : isInstalled ? 'deleteInstalledCert' : null"
       :actionPayload="{
-        domains: isMonitored ? toArray(row?.original?.domain) : isInstalled ? toArray(row?.original?.dirName) : null,
+        domains: isMonitored ? cleanArray(row?.original?.domain) : isInstalled ? cleanArray(row?.original?.dirName) : null,
       }"
     >
       <HintButton

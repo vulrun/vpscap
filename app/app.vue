@@ -1,6 +1,6 @@
 <script setup>
 import "vue-sonner/style.css";
-const { title, description, icon } = useAppConfig();
+// const { title, description, icon } = useAppConfig();
 // useSeoMeta({
 //   title: `${title} - ${description}`,
 //   description,
@@ -14,10 +14,10 @@ const { title, description, icon } = useAppConfig();
 //   twitterCard: "summary_large_image",
 // });
 
-useHead({
-  htmlAttrs: { lang: "en" },
-  link: [{ rel: "icon", type: "image/svg+xml", href: icon }],
-});
+// useHead({
+//   htmlAttrs: { lang: "en" },
+//   link: [{ rel: "icon", type: "image/svg+xml", href: icon }],
+// });
 </script>
 
 <template>
@@ -27,3 +27,7 @@ useHead({
     <NuxtPage />
   </NuxtLayout>
 </template>
+
+<!-- <template>
+  <h1>Hello World!</h1>
+</template> -->
