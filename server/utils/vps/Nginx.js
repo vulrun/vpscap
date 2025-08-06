@@ -311,7 +311,17 @@ export default class NginxHandler {
       console.log(`✅ nginx configuration reloaded`, reloaded);
     } catch (err) {
       console.log("❌ nginx configuration reloaded:", err?.message || err);
-      return null;
+    }
+  }
+
+  async restart() {
+    try {
+      await this.testConfs();
+      await sudoExec("systemctl stop nginx");
+      await sudoExec("systemctl start nginx");
+      console.log(`✅ nginx configuration restarted`);
+    } catch (err) {
+      console.log("❌ nginx configuration restarted:", err?.message || err);
     }
   }
 }

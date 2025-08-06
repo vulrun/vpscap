@@ -6,21 +6,11 @@ const hashPassword = (password) => bcrypt.hashSync(password, BCRYPT_HASH_ROUNDS)
 const comparePassword = (password, hash) => bcrypt.compareSync(password, hash);
 
 module.exports = {
-  createAdminUser,
-  validateAdminUser,
+  hashPassword,
+  verifyUser,
 };
 
-function createAdminUser(username, password) {
-  const adminUser = {
-    NUXT_LOGIN_USERNAME: username,
-    NUXT_LOGIN_PASSWORD: hashPassword(password),
-  };
-
-  setEnvDataSync(adminUser);
-  return adminUser;
-}
-
-function validateAdminUser(inps, envs) {
+function verifyUser(inps, envs) {
   if (inps?.username !== envs?.username) throw new Error("User is invalid");
 
   const isPasswordCorrect = comparePassword(inps?.password, envs?.password);

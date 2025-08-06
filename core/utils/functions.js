@@ -1,5 +1,45 @@
+const net = require("net");
+
+const LOG_COLORS = {
+  RESET: "\x1b[0m",
+
+  // Styles
+  BOLD: "\x1b[1m",
+  DIM: "\x1b[2m",
+  UNDERLINE: "\x1b[4m",
+  INVERSE: "\x1b[7m",
+  HIDDEN: "\x1b[8m",
+
+  // Text colors
+  BLACK: "\x1b[30m",
+  RED: "\x1b[31m",
+  GREEN: "\x1b[32m",
+  YELLOW: "\x1b[33m",
+  BLUE: "\x1b[34m",
+  MAGENTA: "\x1b[35m",
+  CYAN: "\x1b[36m",
+  WHITE: "\x1b[37m",
+
+  // Background colors
+  BG_BLACK: "\x1b[40m",
+  BG_RED: "\x1b[41m",
+  BG_GREEN: "\x1b[42m",
+  BG_YELLOW: "\x1b[43m",
+  BG_BLUE: "\x1b[44m",
+  BG_MAGENTA: "\x1b[45m",
+  BG_CYAN: "\x1b[46m",
+  BG_WHITE: "\x1b[47m",
+};
+
+const styledText = (text, styled) => `${[].concat(styled).join("") || LOG_COLORS.RESET}${text}${LOG_COLORS.RESET}`;
+
 module.exports = {
+  LOG_COLORS,
+  styledText,
   extendObj,
+  trimStr,
+  isValidPort,
+  isPortAvailable,
 };
 
 function extendObj(target, ...sources) {
@@ -58,4 +98,29 @@ function extendObj(target, ...sources) {
   });
 
   return target;
+}
+
+function trimStr(str) {
+  return String(str || "").replace(/^\s+|\s+$/g, "");
+}
+
+function isValidPort(port) {
+  const portNumber = Number(port);
+  return Number.isInteger(portNumber) && portNumber >= 1024 && portNumber <= 65535;
+}
+
+function isPortAvailable(port, host = "127.0.0.1") {
+  return new Promise((resolve, reject) => {
+    const server = net
+      .createServer()
+      .once("error", (err) => {
+        if (err?.code === "EADDRINUSE") return resolve(false);
+        else return reject(err);
+      })
+      .once("listening", () => {
+        server.close();
+        return resolve(true);
+      })
+      .listen(port, host);
+  });
 }

@@ -16,7 +16,7 @@ export const getEnvDataSync = (raw, wd) => {
 export const setEnvDataSync = (envData, wd) => {
   const ENV_PATH = path.join(wd || process.cwd(), ".env");
 
-  const parsedData = getEnvDataSync();
+  const parsedData = getEnvDataSync(null, wd);
   const updatedData = { ...parsedData, ...envData };
 
   fs.writeFileSync(ENV_PATH, envfile.stringify(updatedData));

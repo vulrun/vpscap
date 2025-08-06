@@ -7,12 +7,12 @@
   "author": "",
   "license": "ISC",
   "scripts": {
-    "build:setup-admin-user": "pkg ./scripts/setup-admin-user.js --targets node18-linux --compress GZip --output ./bin/setup-admin-user",
-    "build:tweak-nginx-conf": "pkg ./scripts/tweak-nginx-conf.js --targets node18-linux --compress GZip --output ./bin/tweak-nginx-conf",
-    "build:all": "npm run build:setup-admin-user && npm run build:tweak-nginx-conf",
+    "build:all": "node build.js --all",
+    "build": "node build.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "axios": "^1.11.0",
     "bcryptjs": "^3.0.2",
     "envfile": "^7.1.0",
     "fs-extra": "^11.3.0",
@@ -20,6 +20,7 @@
     "prompts": "^2.4.2"
   },
   "devDependencies": {
+    "esbuild": "^0.25.8",
     "pkg": "^5.8.1"
   }
 }

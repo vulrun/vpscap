@@ -38,19 +38,19 @@ export default defineNuxtConfig({
   },
   nitro: {
     // preset: "cloudflare_pages",
-    routeRules: {
-      // "/getting-started": {
-      //   ssr: true,
-      // },
-      //   "/": {
-      //     prerender: true,
-      //   },
-      // "/dashboard/**": {
-      //   ssr: false,
-      // },
-      //   "/dashboard": {
-      //     redirect: "/dashboard/links",
-      //   },
-    },
+    // routeRules: {
+    //   "/getting-started": {
+    //     ssr: true,
+    //   },
+    //   "/": {
+    //     prerender: true,
+    //   },
+    //   "/dashboard/**": {
+    //     ssr: false,
+    //   },
+    //   "/dashboard": {
+    //     redirect: "/dashboard/links",
+    //   },
+    // },
   },
 });

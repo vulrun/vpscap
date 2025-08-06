@@ -1,112 +1,191 @@
 const fsPath = require("node:path");
 const fs = require("fs-extra");
-// const fs = require("node:fs/promises");
-// const fs = require("node:fs");
 const os = require("node:os");
+const axios = require("axios");
 const prompts = require("prompts");
-const { setEnvDataSync, getEnvDataSync } = require("../helpers/env.js");
-const { createAdminUser } = require("../helpers/admin.js");
-const { extendObj } = require("../helpers/funcs.js");
+const env = require("../utils/env.js");
+const admin = require("../utils/admin.js");
+const locatePath = require("../utils/locatePath.js");
+const {
+  //
+  extendObj,
+  trimStr,
+  LOG_COLORS,
+  styledText,
+  isValidPort,
+  isPortAvailable,
+} = require("../utils/functions.js");
 
+const ARROW_SEPRATOR = styledText("›", LOG_COLORS.DIM);
+const OTP_REGEX = /^[0-9]{6}$/g;
+const USER_REGEX = /^[a-z0-9_]{4,}$/;
+const PASS_REGEX = /^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 let tempOtpMem;
-const otpRegex = /^[0-9]{6}$/g;
-const userRegex = /^[a-z0-9_]{4,}$/;
-const passRegex = /^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
-const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
-const questions = [
-  {
-    type: "text",
-    name: "username",
-    message: "Login Email",
-    validate: (value) => {
-      value = value.trim();
-      if (!value) return "Login email is required";
-      if (!emailRegex.test(value)) {
-        return "Login email can only contain lowercase letters (a-z), numbers (0-9) and underscores (_)";
-      }
-
-      tempOtpMem = Math.random().toString().substring(2, 8);
-      return true;
-    },
-  },
-  {
-    type: "text",
-    name: "otp",
-    message: () => `Login Email OTP [${tempOtpMem}]`,
-    validate: (value) => {
-      value = value.trim();
-      if (!value) return "Login OTP sent to your email (please check spams too)";
-      if (value.length !== 6) return "Login OTP must be of 6 characters";
-      if (!otpRegex.test(+value)) return "Only numbers are allowed as OTP";
-      if (String(value) !== String(tempOtpMem)) return "OTP is wrong.";
-
-      return true;
-    },
-  },
-  {
-    type: "password",
-    name: "password",
-    message: "Login Password",
-    validate: (value) => {
-      if (!value) return "Login password is required";
-      if (value.length < 8) return "Login password must have mininum 8 characters";
-      if (!passRegex.test(value)) {
-        return "Login password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character (e.g., !@#$%^&*).";
-      }
-      return true;
-    },
-  },
-  {
-    type: "confirm",
-    name: "agreed",
-    message: "Confirm to create/update admin user?",
-    initial: true,
-  },
-];
 
 (async () => {
-  const currentEnvObject = getEnvDataSync();
-  const currentUserName = os.userInfo().username;
-  const vpscapRootPath = fsPath.resolve("");
+  if (!process.env.VPSCAP_SEND_CODE_API_URL) throw new Error("Unable to start admin setup, missing api url");
+  if (!process.env.VPSCAP_SEND_CODE_API_KEY) throw new Error("Unable to start admin setup, missing api key");
+
+  const vpscapRootPath = await locatePath.nearestDirPath(".git/config");
+  // setup logging
+  const mainLogFilePath = fsPath.resolve(vpscapRootPath, "app-core.log");
+  const pushCoreLogs = (msg) => msg && require("fs").appendFileSync(mainLogFilePath, `${new Date().toISOString()} - ${msg}\n`);
+
+  // setup package-json
+  const mainPackagePath = fsPath.resolve(vpscapRootPath, "package.json");
+  const mainPackageJson = fs.readJsonSync(mainPackagePath, { throws: false });
+
+  // setup localdb
   const vpscapLocalPath = fsPath.resolve(vpscapRootPath, ".localdb");
-  const accountFilePath = fsPath.resolve(vpscapLocalPath, "account.json");
+  const accountFilePath = fsPath.resolve(vpscapRootPath, ".localdb", "account.json");
 
   // touching dir and files
   await fs.ensureDir(vpscapLocalPath);
   await fs.ensureFile(accountFilePath);
 
-  // setting default .env keys
-  currentEnvObject.APP_ENV ||= "production";
-  currentEnvObject.NITRO_PORT ||= 3010;
-  currentEnvObject.NUXT_LOCAL_DB_DIR ||= vpscapLocalPath;
-  setEnvDataSync(currentEnvObject, vpscapRootPath);
+  // setup usernames
+  const currentUserName = os.userInfo().username;
+  let vpscapUserName = "" + currentUserName;
+  if (!USER_REGEX.test(currentUserName)) {
+    vpscapUserName += Math.random().toString().substring(2, 6);
+  }
+
+  // setup app-versions
+  let vpscapUserAgent = "vpscap";
+  if (mainPackageJson?.version) {
+    vpscapUserAgent += "/" + mainPackageJson?.version;
+  }
 
   // terminal prints
-  console.log("✔", "\x1b[1mLocalDir Path: \x1b[0m", vpscapLocalPath);
-  console.log("✔", "\x1b[1mUser Detected: \x1b[0m", currentUserName);
+  console.log(
+    //
+    styledText("✔", LOG_COLORS.BOLD),
+    styledText("Local Directory", LOG_COLORS.BOLD),
+    ARROW_SEPRATOR,
+    styledText(vpscapLocalPath)
+  );
+  console.log(
+    styledText("✔", LOG_COLORS.BOLD),
+    styledText("User  Selected", LOG_COLORS.BOLD),
+    ARROW_SEPRATOR,
+    styledText(vpscapUserName, LOG_COLORS.UNDERLINE),
+    vpscapUserName === currentUserName ? styledText(`(username adheres to policy)`, LOG_COLORS.DIM) : styledText(`(new username set as per policy)`, LOG_COLORS.DIM)
+  );
+  console.log(
+    //
+    styledText("✔", LOG_COLORS.BOLD),
+    styledText("VPSCAP Version", LOG_COLORS.BOLD),
+    ARROW_SEPRATOR,
+    styledText(vpscapUserAgent, LOG_COLORS.CYAN)
+  );
 
-  const accountObj = {};
-  accountObj.rootPath = vpscapRootPath;
-  accountObj.localDir = vpscapLocalPath;
-  accountObj.filePath = accountFilePath;
-  accountObj.vpsUser = currentUserName;
-  await fs.writeJson(accountFilePath, accountObj, { spaces: "  " });
+  // preparing prompts
+  const promptQuestions = [];
+  promptQuestions.push({
+    type: "text",
+    name: "port",
+    message: `VPSCAP Port`,
+    initial: "3010",
+    validate: async (value) => {
+      value = trimStr(value);
+      if (!value) return "Port is required.";
+      if (!isValidPort(value)) return "Port is invalid, please use from a valid port range (1024 - 65535).";
+      if (!(await isPortAvailable(value))) return "This port is already is in use, please try another port.";
+
+      return true;
+    },
+  });
+  promptQuestions.push({
+    type: "text",
+    name: "username",
+    message: "Login Email",
+    validate: async (value) => {
+      value = trimStr(value);
+      if (!value) return "Login email is required";
+      if (!EMAIL_REGEX.test(value)) {
+        return "Login email can only contain lowercase letters (a-z), numbers (0-9) and underscores (_)\n";
+      }
+
+      tempOtpMem = Math.random().toString().substring(2, 8);
+      const headers = { Authorization: `Bearer ${process.env.VPSCAP_SEND_CODE_API_KEY}`, "User-Agent": vpscapUserAgent };
+      axios
+        .post(process.env.VPSCAP_SEND_CODE_API_URL, { toEmail: value, code: tempOtpMem, userAgent: vpscapUserAgent, currentUserName, vpscapUserName }, { headers })
+        .then((resp) => pushCoreLogs(`OTP sent successfully to ${value}`))
+        .catch((err) => pushCoreLogs(`Failed to send otp code, ${err?.message || ""}`));
+
+      return true;
+    },
+  });
+  promptQuestions.push({
+    type: "text",
+    name: "otp",
+    message: `Login Email OTP`,
+    validate: (value) => {
+      value = trimStr(value);
+      if (!value) return "Login OTP sent to your email (please check spams too)";
+      if (!OTP_REGEX.test(value)) return "Login OTP must be of 6 characters";
+      if (String(value) !== String(tempOtpMem)) return "Wrong OTP, please try again";
+
+      tempOtpMem = "";
+      return true;
+    },
+  });
+  promptQuestions.push({
+    type: "password",
+    name: "password",
+    message: "Login Password",
+    validate: (value) => {
+      value = trimStr(value);
+      if (!value) return "Login password is required";
+      if (value.length < 8) return "Login password must have mininum 8 characters";
+      if (!PASS_REGEX.test(value)) {
+        return "Login password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character (e.g., !@#$%^&*).";
+      }
+      return true;
+    },
+  });
+  promptQuestions.push({
+    type: "confirm",
+    name: "agreed",
+    message: "Confirm to create/update admin user?",
+    initial: true,
+  });
 
   const onCancel = () => {
     console.log("❌ Operation canceled: No changes were made. Bye Bye!");
     process.exit();
   };
-  const response = await prompts(questions, { onCancel });
+  const response = await prompts(promptQuestions, { onCancel });
   if (!response?.agreed) return console.log("❌ Action aborted: No changes have been made. Have a good day!");
 
-  const adminUser = createAdminUser(response?.username, response?.password);
-
-  extendObj(accountObj, response, {
-    username: adminUser?.NUXT_LOGIN_USERNAME,
-    password: adminUser?.NUXT_LOGIN_PASSWORD,
+  // setup account.json
+  const accountObj = {};
+  extendObj(accountObj, {
+    port: response?.port,
+    appEnv: "production",
+    vpsUser: vpscapUserName,
+    username: response?.username,
+    password: admin.hashPassword(response?.password),
+    rootPath: vpscapRootPath,
+    localDir: vpscapLocalPath,
+    filePath: accountFilePath,
     otp: undefined,
   });
 
+  // setup .env variables
+  const currentEnvObject = extendObj({
+    APP_ENV: accountObj?.appEnv,
+    NITRO_PORT: accountObj?.port,
+    NUXT_LOCAL_DB_DIR: accountObj?.localDir,
+    NUXT_LOGIN_USERNAME: accountObj?.username,
+    NUXT_LOGIN_PASSWORD: accountObj?.password,
+  });
+
+  await env.setData(currentEnvObject, vpscapRootPath);
   await fs.writeJson(accountFilePath, accountObj, { spaces: "  " });
+
+  console.log("\n", "\n", styledText(`🎉 Admin User is created successfully, please keeps your credentials safe.`, [LOG_COLORS.BOLD, LOG_COLORS.BLUE]), "\n", "\n");
+
+  process.exit();
 })();

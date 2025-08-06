@@ -93,7 +93,7 @@ export default class WebSites {
     const { path, file } = this.#parseHexaId(confId);
     const isDumped = path.endsWith(".dump");
     const isDefault = path.endsWith("_default.conf");
-    if (isDefault) return await this.#setDefaultConf(options);
+    if (isDefault) return await this.#newDefaultConf(options);
 
     // validating input payload
     const validated = await this.nginx.validateAndSanitize(options);
@@ -153,7 +153,7 @@ export default class WebSites {
     const siteConf = await this.nginx.readConf(path);
 
     if (isDefault) {
-      return await this.#setDefaultConf(siteConf);
+      return await this.#newDefaultConf(siteConf);
     }
 
     // validating input payload and updating
@@ -172,11 +172,10 @@ export default class WebSites {
   async rebuildDefaultConf() {
     const defaultConfPath = fsPath.resolve(this.#confDirPath, "_default.conf");
     if (!shell.test("-f", defaultConfPath)) {
-      return await this.#setDefaultConf();
+      return await this.#newDefaultConf();
     }
 
     const defaultConfId = hexEncode(defaultConfPath);
-
     await this.rebuild(defaultConfId);
   }
 
@@ -208,7 +207,7 @@ export default class WebSites {
     await this.nginxReload();
     return result;
   }
-  async #setDefaultConf(args) {
+  async #newDefaultConf(args) {
     const confPath = this.#confDirPath + "/_default.conf";
 
     const result = await this.nginx.writeConf(confPath, {

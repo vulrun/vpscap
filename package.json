@@ -1,5 +1,6 @@
 {
   "name": "vpscap",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -16,8 +17,9 @@
     "app:start": "export $(cat .env | xargs) && node .output/server/index.mjs",
     "pm2:start": "export $(cat .env | xargs) && pm2 start .output/server/index.mjs --name=vpscap",
     "pm2:reload": "export $(cat .env | xargs) && pm2 reload vpscap --update-env",
-    "setup-renew-cert": "(crontab -l; echo \"0 0 * * * curl -s http://localhost:3010/api/public/renew-certs\") | crontab -",
-    "tweak-nginx-conf": "export $(cat .env | xargs) && sudo -E ./core/bin/tweak-nginx-conf",
+    "build:bin": "node ./core/build.js --all",
+    "setup-vps-conf": "export $(cat .env | xargs) && sudo -E ./core/bin/setup-vps-conf",
+    "setup-cronjobs": "(crontab -l; echo \"0 0 * * * curl -s http://localhost:3010/api/public/renew-certs\") | crontab -",
     "setup-admin-user": "./core/bin/setup-admin-user"
   },
   "dependencies": {
