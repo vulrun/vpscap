@@ -3,12 +3,12 @@ import fs from "fs-extra";
 // import fs from "node:fs/promises";
 // import fs from "node:fs";
 // import os from "node:os";
-import packageJson from "@/package.json";
 import crypto from "node:crypto";
-// import VpsCertBot from "~/server/utils/vps/VpsCertbot";
-// import VpsCertMeta from "~/server/utils/vps/VpsCertMeta";
-// import VpsWebsites from "~/server/utils/vps/VpsWebsites";
-// import VpsAcmeSsl from "~/server/utils/vps/VpsSslAcme";
+import packageJson from "@@/package.json";
+// import VpsCertBot from "@@/server/utils/vps/VpsCertbot";
+// import VpsCertMeta from "@@/server/utils/vps/VpsCertMeta";
+// import VpsWebsites from "@@/server/utils/vps/VpsWebsites";
+// import VpsAcmeSsl from "@@/server/utils/vps/VpsSslAcme";
 
 const LOCAL_DB_DIR = process?.env?.NUXT_LOCAL_DB_DIR || ".localdb/";
 

@@ -8,8 +8,6 @@ import tls from "node:tls";
 import dns from "node:dns/promises";
 import lo from "lodash";
 
-const cleanArray = (...val) => [].concat(...val).filter(Boolean);
-
 export default class SslMeta {
   constructor() {
     this.db = localdb("certs-monitored");

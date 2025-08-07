@@ -27,12 +27,12 @@ const monitoredCols = [
   {
     accessorKey: "domain",
     header: ({ column }) => h(DataTableColumnHeader, { column, title: "Domain" }),
-    cell: ({ row }) => h("div", { class: "" }, toArray(row?.original?.domain)),
+    cell: ({ row }) => h("div", { class: "" }, cleanArray(row?.original?.domain)),
   },
   {
     accessorKey: "subject_names",
     header: ({ column }) => h(DataTableColumnHeader, { column, title: "Subject Names" }),
-    cell: ({ row }) => h(CertsRowDomain, { row, class: "text-gray-500 text-sm fonts-mono-inconsolata", domains: toArray(row?.original?.subject_names) }),
+    cell: ({ row }) => h(CertsRowDomain, { row, class: "text-gray-500 text-sm fonts-mono-inconsolata", domains: cleanArray(row?.original?.subject_names) }),
   },
   {
     accessorKey: "issuer",
@@ -62,12 +62,12 @@ const installedCols = [
   {
     accessorKey: "domain",
     header: ({ column }) => h(DataTableColumnHeader, { column, title: "Domain" }),
-    cell: ({ row }) => h(CertsRowDomain, { row, class: "", domains: toArray(row?.original?.domain) }),
+    cell: ({ row }) => h(CertsRowDomain, { row, class: "", domains: cleanArray(row?.original?.domain) }),
   },
   {
     accessorKey: "altNames",
     header: ({ column }) => h(DataTableColumnHeader, { column, title: "Subject Names" }),
-    cell: ({ row }) => h(CertsRowDomain, { row, class: "text-gray-500 text-sm fonts-mono-inconsolata", domains: toArray(row?.original?.altNames) }),
+    cell: ({ row }) => h(CertsRowDomain, { row, class: "text-gray-500 text-sm fonts-mono-inconsolata", domains: cleanArray(row?.original?.altNames) }),
   },
   {
     accessorKey: "issuer",

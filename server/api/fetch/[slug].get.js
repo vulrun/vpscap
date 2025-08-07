@@ -6,9 +6,9 @@ import os from "node:os";
 // import dns from "node:dns/promises";
 import lo from "lodash";
 import * as envfile from "envfile";
-import shell from "@/server/utils/shell";
-import VpsCertMeta from "~/server/utils/vps/SslMeta";
-import VpsWebsites from "~/server/utils/vps/WebSites";
+import shell from "@@/server/utils/shell";
+import VpsCertMeta from "@@/server/utils/vps/SslMeta";
+import VpsWebsites from "@@/server/utils/vps/WebSites";
 
 const ipv6Regex = /([0-9a-fA-F]{1,4}:){1,7}[0-9a-fA-F]{1,4}/;
 const cleanArray = (...args) => [].concat(...args).filter(Boolean);

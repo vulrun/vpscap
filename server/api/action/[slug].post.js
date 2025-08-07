@@ -1,6 +1,6 @@
-import VpsAcmeSsl from "~/server/utils/vps/SslAcme";
-import VpsCertMeta from "~/server/utils/vps/SslMeta";
-import VpsWebsites from "~/server/utils/vps/WebSites";
+import VpsAcmeSsl from "@@/server/utils/vps/SslAcme";
+import VpsCertMeta from "@@/server/utils/vps/SslMeta";
+import VpsWebsites from "@@/server/utils/vps/WebSites";
 
 const site = new VpsWebsites();
 const sslm = new VpsCertMeta();

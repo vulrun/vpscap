@@ -6,21 +6,23 @@ import fs from "fs-extra";
 import dns from "node:dns/promises";
 import lo from "lodash";
 // import { z } from "zod";
-import shell from "@/server/utils/shell";
-import SslAcme from "@/server/utils/vps/SslAcme";
-import SslMeta from "@/server/utils/vps/SslMeta";
-import NginxHandler from "@/server/utils/vps/Nginx";
+import shell from "@@/server/utils/shell";
+import SslAcme from "@@/server/utils/vps/SslAcme";
+import SslMeta from "@@/server/utils/vps/SslMeta";
+import NginxHandler from "@@/server/utils/vps/Nginx";
 
-const cleanArray = (val) => [].concat(val).filter(Boolean);
-const LOCAL_DB_DIR = process?.env?.NUXT_LOCAL_DB_DIR || ".localdb/";
+const LOCAL_DB_DIR = process?.env?.NUXT_LOCAL_DB_DIR;
 
 export default class WebSites {
   #accountFilePath = fsPath.resolve(LOCAL_DB_DIR, "account.json");
   #confDirPath = fsPath.resolve(LOCAL_DB_DIR, "sites.conf.d");
 
   constructor() {
-    const accountObj = fs.readJsonSync(this.#accountFilePath);
-    if (!accountObj?.vpsUser) throw new Error("Please setup admin user first");
+    const accountObj = fs.readJsonSync(this.#accountFilePath, { throws: false });
+    if (!accountObj?.vpsUser) {
+      console.log("Please setup admin user first");
+      process.exit();
+    }
 
     this.sslMeta = new SslMeta();
     this.sslAcme = new SslAcme({ webSites: this, email: accountObj?.username });
@@ -224,7 +226,7 @@ export default class WebSites {
     return result;
   }
   async #dnsIpLookup(domain) {
-    domain = this.nginx.sanitizeDomains(domain)?.[0];
+    domain = sanitizeDomains(domain)?.[0];
 
     const [vpsIp, dnsIp] = await Promise.all([
       //
@@ -243,14 +245,14 @@ export default class WebSites {
     };
   }
   async #checkDomainsInUse(domains, options) {
-    domains = this.nginx.sanitizeDomains(domains);
+    domains = sanitizeDomains(domains);
     if (domains.length <= 0) throw new Error("Domains are missing");
 
     // validating domains
     const availableSites = await this.list();
     const domainsInUse = lo([])
       .concat(availableSites)
-      .map((v) => this.nginx.sanitizeDomains(v?.domain))
+      .map((v) => sanitizeDomains(v?.domain))
       .flattenDeep()
       .uniq()
       .sort()
@@ -269,7 +271,7 @@ export default class WebSites {
       return;
     }
 
-    domain = this.nginx.sanitizeDomains(domain);
+    domain = sanitizeDomains(domain);
     if (domain.length < 1) throw new Error("Domain is missing");
     if (domain.length !== 1) throw new Error("Mulitple domains are not allowed");
 
@@ -277,7 +279,7 @@ export default class WebSites {
     await this.sslAcme.issueCertificate(domain);
   }
   async deleteCert(domain) {
-    domain = this.nginx.sanitizeDomains(domain);
+    domain = sanitizeDomains(domain);
     if (domain.length < 1) throw new Error("Domain is missing");
     if (domain.length !== 1) throw new Error("Mulitple domains are not allowed");
 
@@ -355,7 +357,7 @@ export default class WebSites {
 
   // ====================== Private Cert Methods ====================== //
   #filterCerts(certs, domain) {
-    domain = this.nginx.sanitizeDomains(domain);
+    domain = sanitizeDomains(domain);
     if (!lo.isArray(domain) || lo.isEmpty(domain)) {
       return lo.filter(certs, (c) => !c?.isExpired);
     }
@@ -377,7 +379,7 @@ export default class WebSites {
           daysLeft,
           remarks: daysLeft > 0 ? `${daysLeft} days left` : "EXPIRED",
           domain: domain,
-          domains: this.nginx.sanitizeDomains(domain),
+          domains: sanitizeDomains(domain),
         });
       }
     }
