@@ -1,7 +1,17 @@
 export default eventHandler((event) => {
   const runtimeConfig = useRuntimeConfig(event);
 
+  event.cronResponse = (data, err) => {
+    setResponseHeaders(event, { "Content-Type": "text/plain" });
+    err ? setResponseStatus(event, 400, "ERROR") : setResponseStatus(event, 200, "OK");
+
+    const errorMessage = err?.message || err?.statusMessage || err?.statusText || "oops, something went wrong";
+    const timestamp = new Date().toISOString().replace("T", " ").split(".")[0];
+    return `[${timestamp}] ${err ? errorMessage : data}\n`;
+  };
+
   event.sendResponse = (data, statusCode, statusText) => {
+    setResponseHeaders(event, { "Content-Type": "application/json" });
     setResponseStatus(event, statusCode || 200, cleanStatusText(statusText));
     return JSON.parse(JSON.stringify(data));
   };

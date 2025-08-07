@@ -149,7 +149,7 @@ export default class SslMeta {
     domains.map((domain) => this.cacheDb.selectDataKey(domain, true).deleteData());
   }
 
-  refresh(domains) {
+  hardRefresh(domains) {
     if (!Array.isArray(domains)) {
       throw new Error("Input must be an array");
     }
