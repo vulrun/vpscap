@@ -21,8 +21,9 @@ const controllers = {
     sslm.hardRefresh(body?.domains);
     return "Refreshed";
   },
-  purgeMonitoredCertsCache() {
-    sslm.purgeCache();
+  async purgeMonitoredCertsCache() {
+    await sslm.purgeCache();
+    await sslm.fetchInBulk();
     return "Cache Purged";
   },
 

@@ -22,7 +22,7 @@ onMounted(() => {
   if (route?.query?.monitor) return setViewMode("monitor");
 });
 const monitoredCerts = useApiFetch(`/api/fetch/monitoredCerts`);
-const monitoredCertsCachedAt = computed(() => (monitoredCerts?.isLoading?.value ? null : monitoredCerts?.result?.value?.[0]?.cachedAt));
+const monitoredCertsCachedAt = computed(() => (monitoredCerts?.isLoading?.value ? null : monitoredCerts?.result?.value?.cachedAt));
 const monitoredCols = [
   {
     accessorKey: "domain",
@@ -113,12 +113,10 @@ const installedCols = [
         <div class="hstack items-start justify-between">
           <div class="vstack gap-1">
             <h3 class="text-gray-700 text-md font-semibold leading-none tracking-tight">Monitored Certificates</h3>
-            <p class="text-gray-500 text-sm">
-              Stay ahead of expiration dates with timely tracking alerts for your important certificates.
-              <span class="mx-1" v-if="monitoredCertsCachedAt"
-                >Last cached at: <HoverText class="font-bold" :hoverText="monitoredCertsCachedAt" :innerText="getRelativeTime(monitoredCertsCachedAt)"
-              /></span>
-            </p>
+            <p class="text-gray-500 text-sm">Stay ahead of expiration dates with timely tracking alerts for your important certificates.</p>
+            <span class="text-gray-500 text-sm" v-if="monitoredCertsCachedAt?.toISOString">
+              Last updated at: <HoverText class="font-semibold text-gray-600" :hoverText="monitoredCertsCachedAt?.toISOString">{{ getRelativeTime(monitoredCertsCachedAt?.valueOf) }}</HoverText>
+            </span>
           </div>
 
           <div class="hstack gap-2">
@@ -146,7 +144,7 @@ const installedCols = [
 
         <div class="py-10">
           <Skeleton v-if="monitoredCerts?.isLoading?.value" class="aspect-video" />
-          <CertsDataTable v-else :data="monitoredCerts?.result?.value" :columns="monitoredCols" :sorting="[{ id: 'remarks', desc: false }]" />
+          <CertsDataTable v-else :data="monitoredCerts?.result?.value?.certList" :columns="monitoredCols" :sorting="[{ id: 'remarks', desc: false }]" />
         </div>
       </SimpleCard>
 
@@ -171,7 +169,7 @@ const installedCols = [
 
         <div class="py-10">
           <Skeleton v-if="installedCerts?.isLoading?.value" class="aspect-video" />
-          <CertsDataTable v-else :data="installedCerts?.result?.value" :columns="installedCols" :sorting="[{ id: 'remarks', desc: false }]" />
+          <CertsDataTable v-else :data="installedCerts?.result?.value?.certList" :columns="installedCols" :sorting="[{ id: 'remarks', desc: false }]" />
         </div>
       </SimpleCard>
     </div>

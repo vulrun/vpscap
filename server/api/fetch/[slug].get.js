@@ -12,7 +12,6 @@ import VpsWebsites from "@@/server/utils/vps/WebSites";
 import AccountJson from "@@/server/utils/vps/AccountJson";
 
 const ipv6Regex = /([0-9a-fA-F]{1,4}:){1,7}[0-9a-fA-F]{1,4}/;
-const cleanArray = (...args) => [].concat(...args).filter(Boolean);
 const cleanUniqArray = (...args) => lo.uniq(cleanArray(...args));
 
 const sslio = new VpsCertMeta();
@@ -32,7 +31,7 @@ const controllers = {
     const disabled = siteList.reduce((acc, itm) => (acc += !itm?.isActive ? 1 : 0), 0);
     return `${actives} active, ${disabled} disabled configurations`;
   },
-  pm2Stats() {
+  async pm2Stats() {
     return `## running, ## stopped, ## errored services`;
   },
   async serverInfo() {
@@ -93,11 +92,16 @@ const controllers = {
     const returned = await sudoExec("df -h --total");
     return convertToArray(returned);
   },
-  monitoredCerts() {
-    return sslio.fetchInBulk();
+  async monitoredCerts() {
+    return {
+      cachedAt: await sslio.getCachedAt(),
+      certList: await sslio.fetchBulkCache(),
+    };
   },
-  installedCerts() {
-    return sites.findAllCert();
+  async installedCerts() {
+    return {
+      certList: await sites.findAllCert(),
+    };
   },
   availableSites() {
     return sites.list();

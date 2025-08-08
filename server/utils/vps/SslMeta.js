@@ -12,6 +12,7 @@ export default class SslMeta {
   constructor() {
     this.db = localdb("certs-monitored");
     this.deletedDb = localdb("certs-monitored", "deletedData");
+    this.cacheAtDb = localdb("certs-monitored-cache", "cachedAt");
     this.cacheDb = localdb("certs-monitored-cache");
   }
 
@@ -68,7 +69,7 @@ export default class SslMeta {
       if (cert?.isExpired) throw new Error("EXPIRED_SSL");
 
       // cache result
-      this.cacheDb.selectDataKey(domain, true).setData(cert, "1d");
+      this.cacheDb.selectDataKey(domain, true).setData(cert);
       return cert;
     } catch (err) {
       const cert = {};
@@ -78,7 +79,7 @@ export default class SslMeta {
 
       // cache result
       if (true || process?.env?.APP_ENV?.startsWith("dev")) {
-        this.cacheDb.selectDataKey(domain, true).setData(cert, "1d");
+        this.cacheDb.selectDataKey(domain, true).setData(cert);
       }
 
       return cert;
@@ -95,6 +96,10 @@ export default class SslMeta {
     domains = cleanArray(this.db.getData(), domains);
     if (!Array.isArray(domains) && domains.length <= 0) return [];
 
+    // update cachedAt value
+    const dateNow = new Date();
+    this.cacheAtDb.setData({ valueOf: dateNow.valueOf(), toISOString: dateNow.toISOString() });
+
     // Get certificates for all domains in parallel
     return Promise.all(domains.map((domain) => this.fetch(domain)));
 
@@ -102,6 +107,26 @@ export default class SslMeta {
     //   resolved: result?.filter((res) => res?.status !== "rejected").map((res) => res?.value),
     //   rejected: result?.filter((res) => res?.status === "rejected").map((res) => res?.reason),
     // };
+  }
+
+  fetchBulkCache(domains) {
+    // make it lowercase for case insensitivity
+    if (domains && Array.isArray(domains)) {
+      domains = domains.map((domain) => domain.toLowerCase());
+    }
+
+    // fetch and merge data
+    domains = cleanArray(this.db.getData(), domains);
+    if (!Array.isArray(domains) && domains.length <= 0) return [];
+
+    // Get certificates for all domains in parallel
+    const promises = domains.map((d) => this.cacheDb.selectDataKey(d, true).getData());
+    return Promise.all(promises);
+  }
+
+  getCachedAt() {
+    const cachedAt = this.cacheAtDb.getData();
+    return cachedAt;
   }
 
   list() {
