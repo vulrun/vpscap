@@ -57,11 +57,6 @@ const navs = [
     label: "--sample",
     href: "/sample",
   },
-  {
-    icon: SettingsIcon,
-    label: "--settings",
-    href: "/settings",
-  },
 ].filter((i) => {
   return i?.label?.startsWith("--") ? String(config?.public?.appEnv).startsWith("dev") : true;
 });
@@ -93,19 +88,18 @@ function doLogout() {
       </nav>
     </div>
 
-    <div :class="cn('w-full fixed bottom-0 left-0 right-0 p-2', props?.fixed_classes)">
+    <div :class="cn('w-full fixed bottom-0 left-0 right-0 p-2 bg-gray-800', props?.fixed_classes)">
       <div class="z-50 min-w-56 overflow-hidden rounded-sm border-0 bg-gray-700 p-1 text-white shadow-inner">
         <div class="flex items-center px-1 py-1.5 text-left text-sm font-normal">
           <LayoutsAvatarDiv />
         </div>
         <div class="-mx-1 my-1 h-px bg-gray-800" />
-
         <NuxtLink
           to="/guide"
           class="cursor-pointer relative flex select-none items-center rounded-sm gap-2 px-2 py-1 h-10 text-sm outline-none transition-colors hover:bg-gray-800 [&>svg]:size-4 [&>svg]:shrink-0"
         >
           <MonitorCheckIcon />
-          Installation Guide
+          Welcome Guide
         </NuxtLink>
 
         <Dialog>
@@ -132,6 +126,14 @@ function doLogout() {
           Log out
         </div>
       </div>
+      <a
+        href="https://github.com/vulrun/vpscap"
+        target="_blank"
+        class="cursor-pointer relative flex select-none items-center rounded-sm gap-2 mt-1 -mb-1 px-2 py-1 h-8 text-sm outline-none transition-colors text-gray-500 hover:text-gray-400 [&>svg]:size-4 [&>svg]:shrink-0"
+      >
+        <GithubIcon />
+        Github
+      </a>
 
       <!-- <DropdownMenu>
         <DropdownMenuTrigger class="w-full hstack p-2 gap-2 rounded-md shadow transition-all text-gray-200 bg-gray-50/10 hover:bg-gray-50/20 data-[state=open]:bg-gray-50/20">

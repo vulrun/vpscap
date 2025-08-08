@@ -22,8 +22,8 @@ async function onSubmit() {
     dialogOpen.value = false;
   } catch (error) {
     isSubmitting.value = false;
-    errors.value = [error?.message];
-    toast(error?.message || "oops, something went wrong");
+    errors.value = [error?.message || error];
+    toast(error?.message || error || "oops, something went wrong");
   }
 }
 </script>

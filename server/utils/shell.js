@@ -31,10 +31,15 @@ export function sudoExec(command) {
   return shellExec(command);
 }
 
-export function isInstalled(pkgName) {
+export function installedPath(pkgName) {
   try {
     return shellExec(`which ${pkgName}`);
   } catch (error) {
     return null;
   }
+}
+export function isInstalled(pkgName) {
+  return installedPath(pkgName)
+    .then((i) => true)
+    .catch((e) => false);
 }

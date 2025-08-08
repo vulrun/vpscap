@@ -18,25 +18,26 @@ export default eventHandler(async (event) => {
     const accountObj = fs.readJsonSync(accountFilePath);
     if (!accountObj?.vpsUser) throw new Error("Please setup admin user first");
 
-    const prerequisite = {};
-    // prerequisite.vpscapLocalDir = fsPath.resolve(LOCAL_DB_DIR);
-    prerequisite.install_nginx = (await isInstalled("nginx")) ? true : false;
-    prerequisite.configu_nginx = isNginxDirAdded();
-    prerequisite.install_pm2 = (await isInstalled("pm2")) ? true : false;
-    prerequisite.install_php = (await isInstalled("php")) ? true : false;
-    prerequisite.canContinue = calcPrerequisiteScore(prerequisite) > 50;
+    const deps = {};
+    // deps.vpscapLocalDir = fsPath.resolve(LOCAL_DB_DIR);
+    deps.install_nginx = await isInstalled("nginx");
+    deps.configure_vps = await isVpsConfigured();
+    deps.install_pm2 = await isInstalled("pm2");
+    deps.install_php = await isInstalled("php");
+    deps.current_score = calcScore(deps);
+    deps.canContinue = deps.current_score > 50;
 
     const runtimeConfig = useRuntimeConfig(event);
     const resp = {};
     resp.name = packageJson?.name;
-    resp.version = packageJson?.version;
     resp.appEnv = runtimeConfig?.appEnv;
-    resp.prerequisite = prerequisite;
+    resp.version = packageJson?.version;
     resp.profile = {
       name: accountObj?.vpsUser,
       email: accountObj?.username,
       avatar: getGravatarUrl(accountObj?.username),
     };
+    resp.prerequisite = deps;
 
     if (runtimeConfig?.appEnv.startsWith("dev")) {
       resp.appConfig = useAppConfig(event);
@@ -57,18 +58,18 @@ export default eventHandler(async (event) => {
 // const body = await readBody(event);
 // const result = await readValidatedBody(event, validator);
 
-function isNginxDirAdded() {
+function isVpsConfigured() {
   const nginxFilePath = "/etc/nginx/nginx.conf";
   const nginxConfRaw = fs.readFileSync(nginxFilePath, "utf8");
   return nginxConfRaw.indexOf(`###_MODIFIED_BY_VPSCAP_###`) !== -1;
 }
 
-function calcPrerequisiteScore(prerequisite) {
+function calcScore(prerequisite) {
   let currentScore = 0;
   if (prerequisite?.install_nginx) currentScore += 25;
-  if (prerequisite?.configu_nginx) currentScore += 25;
-  if (prerequisite?.install_pm2) currentScore += 10;
-  if (prerequisite?.install_php) currentScore += 10;
+  if (prerequisite?.configure_vps) currentScore += 25;
+  if (prerequisite?.install_pm2) currentScore += 1;
+  if (prerequisite?.install_php) currentScore += 1;
 
   return currentScore;
 }

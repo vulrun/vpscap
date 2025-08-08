@@ -5,7 +5,7 @@ const { data, status, error, refresh, clear } = useAsyncData("prerequisite", () 
 const stepLabels = {
   //
   install_nginx: "Install Nginx",
-  setup_nginx: "Setup Nginx Configuration",
+  configure_vps: "Configure VPS",
   install_pm2: "Install PM2",
   install_php: "Install PHP and modules",
 };
@@ -41,10 +41,10 @@ function changeStep(idx) {
         <CopyText textToCopy="sudo systemctl status nginx" />
       </GuideContent>
 
-      <GuideContent :active_step="activeStep" :steps="stepLabels" step_key="setup_nginx">
+      <GuideContent :active_step="activeStep" :steps="stepLabels" step_key="configure_vps">
         <!-- <p>Lets make changes to the nginx configuration, choose your cli editor from nano/vim or anything you like</p> -->
-        <p>Lets make changes to the nginx configuration, execute the below command, to update nginx configurations</p>
-        <CopyText textToCopy="npm run tweak-nginx-conf" />
+        <p>Lets make changes to the nginx configuration, and few more configurations. Just execute the below command</p>
+        <CopyText textToCopy="npm run setup-vps-conf" />
       </GuideContent>
 
       <GuideContent :active_step="activeStep" :steps="stepLabels" step_key="install_pm2"></GuideContent>

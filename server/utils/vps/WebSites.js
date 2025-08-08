@@ -297,6 +297,27 @@ export default class WebSites {
       target: site?.target,
     }).then();
   }
+  async renewCert(domain) {
+    if (process?.env?.APP_ENV?.startsWith("dev")) {
+      console.log(`🗿 Skipping, certificate installation on development server is not possible`);
+      throw new Error(`🗿 Skipping, certificate installation on development server is not possible`);
+    }
+
+    // check invalid domains
+    if (domain.length < 1) throw new Error("Domain is missing");
+    if (domain.length !== 1) throw new Error("Mulitple domains are not allowed");
+
+    // check domain renew availability
+    const ___domain = sanitizeDomains(domain)?.[0];
+    const installed = await this.findAllCert();
+    const domainCert = installed.filter((itm) => itm?.domains.includes(___domain));
+    if (!domainCert.length < 1) throw new Error("Domain is not available for renew, please install a fresh ssl instead");
+
+    // generating the new certificate
+    console.log("🔄 Renewing SSL certificate...");
+    await this.sslAcme.initialize();
+    return this.sslAcme.issueCertificate(domain);
+  }
   async renewCerts() {
     if (process?.env?.APP_ENV?.startsWith("dev")) {
       console.log(`🗿 Skipping, certificate installation on development server is not possible`);

@@ -32,6 +32,23 @@ const isInstalled = computed(() => viewMode.value === "install");
 
     <ConfirmAction
       asChild
+      v-if="isInstalled"
+      @update:list="emits('update:list', $event)"
+      :title="`Are you sure to renew \`${row?.original?.dirName}\` certificate?`"
+      action="renewInstalledCert"
+      :actionPayload="{ domains: cleanArray(row?.original?.dirName) }"
+    >
+      <HintButton
+        class="relative hstack size-7 rounded p-0 [&_svg]:size-4 border border-lime-600 text-lime-600 hover:text-lime-600 hover:bg-lime-100"
+        variant="outline"
+        :title="`Renew ${row?.original?.dirName}`"
+      >
+        <RefreshCwIcon />
+      </HintButton>
+    </ConfirmAction>
+
+    <ConfirmAction
+      asChild
       @update:list="emits('update:list', $event)"
       :title="`Are you sure to delete \`${isMonitored ? row?.original?.domain : isInstalled ? row?.original?.dirName : null}\` certificate?`"
       :action="isMonitored ? 'deleteMonitoredCert' : isInstalled ? 'deleteInstalledCert' : null"

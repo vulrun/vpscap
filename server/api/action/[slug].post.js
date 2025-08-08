@@ -113,7 +113,6 @@ export default eventHandler(async (event) => {
 
     return event.sendResponse(result);
   } catch (err) {
-    console.log("🚀 ~ eventHandler ~ err:", err);
     return event.errorResponse(err);
   }
 });
