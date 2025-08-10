@@ -2,10 +2,10 @@
 import { toast } from "vue-sonner";
 import { LoaderCircleIcon } from "lucide-vue-next";
 
-const props = defineProps(["apiUrl", "value", "heading"]);
+const props = defineProps(["class", "apiUrl", "value", "heading", "dialogOpen"]);
 const emits = defineEmits(["update:list"]);
 const errors = ref([]);
-const dialogOpen = ref(props?.value ? true : false);
+const dialogOpen = ref(props?.dialogOpen ? true : false);
 const isSubmitting = ref(false);
 const inputDomain = ref(props?.value || "");
 const computedDomains = computed(() => sanitizeDomains(inputDomain?.value));
@@ -35,7 +35,7 @@ async function onSubmit() {
   <Dialog v-model:open="dialogOpen">
     <DialogTrigger as-child>
       <slot>
-        <Button class="ml-2" variant="outline">Add</Button>
+        <Button :class="cn(['ml-2', props?.class])" variant="outline">Add</Button>
       </slot>
     </DialogTrigger>
     <DialogContent as-child class="max-w-[95svw] max-h-[95svh] md:max-w-lg grid-rows-[auto_minmax(0,1fr)_auto]" @interact-outside="(event) => event.preventDefault()">

@@ -12,14 +12,14 @@ import CertsRowAction from "@/components/Certs/RowAction.vue";
 const viewMode = useLocalRef("certs-view-mode", "monitor");
 const setViewMode = (value) => (viewMode.value = value === "install" ? "install" : "monitor");
 
-const router = useRouter();
-const route = useRoute();
+// const router = useRouter();
+// const route = useRoute();
 onMounted(() => {
   // remove all query parameters after 2secs
-  setTimeout(() => router.push({ ...route, query: null }), 2000);
+  // setTimeout(() => router.push({ ...route, query: null }), 2000);
   // act on query value
-  if (route?.query?.install) return setViewMode("install");
-  if (route?.query?.monitor) return setViewMode("monitor");
+  // if (route?.query?.install) return setViewMode("install");
+  // if (route?.query?.monitor) return setViewMode("monitor");
 });
 const monitoredCerts = useApiFetch(`/api/fetch/monitoredCerts`);
 const monitoredCertsCachedAt = computed(() => (monitoredCerts?.isLoading?.value ? null : monitoredCerts?.result?.value?.cachedAt));
@@ -123,7 +123,7 @@ const installedCols = [
             <HintButton title="Refresh" variant="outline" size="sm" class="relative hstack bg-background text-muted-foreground h-10 w-10 [&_svg]:size-4" @click.prevent="monitoredCerts?.reload.value">
               <RefreshCwIcon />
             </HintButton>
-            <CertsAddDialog apiUrl="/api/action/insertMonitoredCert" :value="route?.query?.monitor" heading="Add Monitor Certificate" @update:list="() => monitoredCerts?.reload.value()">
+            <CertsAddDialog apiUrl="/api/action/insertMonitoredCert" heading="Add Monitor Certificate" @update:list="() => monitoredCerts?.reload.value()">
               <HintButton title="Add Certificate" variant="outline" size="sm" class="relative hstack bg-background text-muted-foreground h-10 w-10 [&_svg]:size-4">
                 <PlusIcon />
               </HintButton>
@@ -159,7 +159,7 @@ const installedCols = [
             <HintButton title="Refresh" variant="outline" size="sm" class="relative hstack bg-background text-muted-foreground h-10 w-10 [&_svg]:size-4" @click.prevent="installedCerts?.reload.value">
               <RefreshCwIcon />
             </HintButton>
-            <CertsAddDialog apiUrl="/api/action/createInstalledCert" :value="route?.query?.install" heading="Install Certificate" @update:list="() => installedCerts?.reload.value()">
+            <CertsAddDialog apiUrl="/api/action/createInstalledCert" heading="Install Certificate" @update:list="() => installedCerts?.reload.value()">
               <HintButton title="Add Certificate" variant="outline" size="sm" class="relative hstack bg-background text-muted-foreground h-10 w-10 [&_svg]:size-4">
                 <PlusIcon />
               </HintButton>

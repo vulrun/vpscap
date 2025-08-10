@@ -66,10 +66,15 @@ const dropdownItemClass = ref(
         >
       </DropdownMenuItem>
       <DropdownMenuItem as-child>
-        <NuxtLink :to="`/certs?monitor=${row?.original?.domain}`" as="a" :class="[dropdownItemClass, 'text-cyan-600']"><ShieldAlertIcon />Monitor SSL</NuxtLink>
+        <CertsAddDialog apiUrl="/api/action/insertMonitoredCert" :value="row?.original?.domain" heading="Add Monitor Certificate" @update:list="emits('update:list', $event)">
+          <button :class="[dropdownItemClass, 'text-cyan-600']"><ShieldAlertIcon />Monitor SSL</button>
+        </CertsAddDialog>
       </DropdownMenuItem>
+
       <DropdownMenuItem as-child>
-        <NuxtLink :to="`/certs?install=${row?.original?.domain}`" as="a" :class="[dropdownItemClass, 'text-green-600']"><ShieldCheckIcon />Install SSL</NuxtLink>
+        <CertsAddDialog apiUrl="/api/action/createInstalledCert" :value="row?.original?.domain" heading="Install Certificate" @update:list="emits('update:list', $event)">
+          <button :class="[dropdownItemClass, 'text-green-600']"><ShieldCheckIcon />Install SSL</button>
+        </CertsAddDialog>
       </DropdownMenuItem>
     </DropdownMenuContent>
   </DropdownMenu>
