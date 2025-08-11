@@ -5,7 +5,7 @@ const slotText = useSlotAsText();
 
 <template>
   <div class="vstack relative mb-8">
-    <h2 class="text-2xl font-semibold tracking-normal">{{ props?.title }}</h2>
+    <h2 class="text-2xl font-bold tracking-tight">{{ props?.title }}</h2>
     <p class="text-muted-foreground">{{ slotText || props?.brief }}</p>
   </div>
 </template>

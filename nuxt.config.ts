@@ -4,6 +4,22 @@ export default defineNuxtConfig({
   devtools: {
     enabled: !true,
   },
+  app: {
+    // scrollBehavior(to, from, savedPosition) {
+    //   if (to.hash) {
+    //     return new Promise((resolve) => {
+    //       setTimeout(() => {
+    //         const el = document.querySelector(to.hash);
+    //         if (el) {
+    //           el.scrollIntoView({ behavior: "smooth" });
+    //         }
+    //         resolve({ left: 0, top: 0 }); // fallback
+    //       }, 300); // Adjust the timeout as needed
+    //     });
+    //   }
+    //   return savedPosition || { left: 0, top: 0 };
+    // },
+  },
   vite: {},
   build: {},
   modules: [

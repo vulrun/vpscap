@@ -107,14 +107,23 @@ function doLogout() {
           <MonitorCheckIcon />
           Installation Guide
         </NuxtLink>
-        <a
-          href="https://github.com/vulrun/vpscap"
-          target="_blank"
-          class="cursor-pointer relative flex select-none items-center rounded-sm gap-2 px-2 py-1 h-10 text-sm outline-none transition-colors hover:bg-gray-800 [&>svg]:size-4 [&>svg]:shrink-0"
-        >
-          <GithubIcon class="size-4" />
-          Github
-        </a>
+
+        <Dialog>
+          <DialogTrigger as-child>
+            <a class="cursor-pointer relative flex select-none items-center rounded-sm gap-2 px-2 py-1 h-10 text-sm outline-none transition-colors hover:bg-gray-800 [&>svg]:size-4 [&>svg]:shrink-0">
+              <SettingsIcon />
+              Settings
+            </a>
+          </DialogTrigger>
+          <DialogContent
+            class="flex sm:max-w-xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl p-0 h-[90dvh] max-h-[90dvh] overflow-auto rounded-none md:rounded-lg"
+            @interact-outside="(event) => event.preventDefault()"
+          >
+            <DialogTitle class="sr-only">Settings</DialogTitle>
+            <DialogDescription class="sr-only">Settings</DialogDescription>
+            <Settings />
+          </DialogContent>
+        </Dialog>
         <div
           @click.prevent="doLogout"
           class="cursor-pointer relative flex select-none items-center rounded-sm gap-2 px-2 py-1 h-10 text-sm outline-none transition-colors hover:bg-gray-800 [&>svg]:size-4 [&>svg]:shrink-0"

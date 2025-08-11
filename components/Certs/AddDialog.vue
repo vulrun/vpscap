@@ -38,7 +38,7 @@ async function onSubmit() {
         <Button class="ml-2" variant="outline">Add</Button>
       </slot>
     </DialogTrigger>
-    <DialogContent as-child class="max-w-[95svw] max-h-[95svh] md:max-w-lg grid-rows-[auto_minmax(0,1fr)_auto]">
+    <DialogContent as-child class="max-w-[95svw] max-h-[95svh] md:max-w-lg grid-rows-[auto_minmax(0,1fr)_auto]" @interact-outside="(event) => event.preventDefault()">
       <form @submit.prevent="onSubmit">
         <DialogHeader>
           <DialogTitle>{{ props?.heading || "Add Certficate" }}</DialogTitle>

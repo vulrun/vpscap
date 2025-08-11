@@ -30,8 +30,9 @@ const forwardedProps = useForwardProps(delegatedProps)
       )
     "
   >
-    <RadioGroupIndicator class="flex items-center justify-center">
+    <!-- <RadioGroupIndicator class="flex items-center justify-center">
       <CheckIcon class="h-3.5 w-3.5 fill-primary" />
-    </RadioGroupIndicator>
+    </RadioGroupIndicator> -->
+    <RadioGroupIndicator class="flex items-center justify-center w-full h-full relative after:content-[''] after:block after:w-2.5 after:h-2.5 after:rounded-[50%] after:bg-stone-700 dark:after:bg-stone-100" />
   </RadioGroupItem>
 </template>

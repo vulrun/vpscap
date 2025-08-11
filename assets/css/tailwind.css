@@ -109,6 +109,10 @@
   .malign {
     @apply flex flex-row items-center justify-center;
   }
+
+  .disabled {
+    @apply opacity-50 pointer-events-none select-none;
+  }
 }
 
 .fonts-mono-ubuntu {

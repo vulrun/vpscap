@@ -57,7 +57,7 @@ function selectLink(link) {
       </kbd>
     </Button>
     <Dialog :open="isOpen" @update:open="isOpen = !isOpen">
-      <DialogContent class="overflow-hidden p-0 shadow-lg">
+      <DialogContent class="overflow-hidden p-0 shadow-lg" @interact-outside="(event) => event.preventDefault()">
         <Command
           v-model:search-term="searchTerm"
           v-model="selectedLink"

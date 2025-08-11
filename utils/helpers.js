@@ -1,3 +1,7 @@
+import { toast } from "vue-sonner";
+
+export { toast };
+
 export function $persist(key, value) {
   // set the values
   if (typeof value !== "undefined") {

@@ -12,7 +12,7 @@ const { title, fetch } = defineProps(["title", "fetch"]);
           <DialogTrigger class="opacity-75">
             <Button variant="outline" size="sm" class="ml-auto text-xs">view all...</Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent @interact-outside="(event) => event.preventDefault()">
             <DialogHeader>
               <DialogTitle>{{ title }}</DialogTitle>
             </DialogHeader>

@@ -33,7 +33,7 @@ async function onSubmit() {
     <DialogTrigger :class="cn(props?.class)" :disabled="props?.disabled" v-bind="{ asChild: props?.asChild }">
       <slot />
     </DialogTrigger>
-    <DialogContent class="space-y-0 [&_button.absolute]:hidden" :disableOutsidePointerEvents="true">
+    <DialogContent class="space-y-0 [&_button.absolute]:hidden" @interact-outside="(event) => event.preventDefault()">
       <DialogTitle class="leading-normal tracking-normal">{{ props?.title || "Are you absolutely sure?" }}</DialogTitle>
       <div
         class="text-justify text-sm text-muted-foreground leading-5"

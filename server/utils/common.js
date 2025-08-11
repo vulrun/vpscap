@@ -22,6 +22,8 @@ import {
   extendObj,
   markdownToHtmlLite,
   sanitizeDomains,
+  parseSmtpUrl,
+  buildSmtpUrl,
 } from "@@/utils/common";
 
 export {
@@ -48,4 +50,6 @@ export {
   extendObj,
   markdownToHtmlLite,
   sanitizeDomains,
+  parseSmtpUrl,
+  buildSmtpUrl,
 };

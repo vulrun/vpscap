@@ -9,6 +9,7 @@ import * as envfile from "envfile";
 import shell from "@@/server/utils/shell";
 import VpsCertMeta from "@@/server/utils/vps/SslMeta";
 import VpsWebsites from "@@/server/utils/vps/WebSites";
+import AccountJson from "@@/server/utils/vps/AccountJson";
 
 const ipv6Regex = /([0-9a-fA-F]{1,4}:){1,7}[0-9a-fA-F]{1,4}/;
 const cleanArray = (...args) => [].concat(...args).filter(Boolean);
@@ -16,6 +17,7 @@ const cleanUniqArray = (...args) => lo.uniq(cleanArray(...args));
 
 const sslio = new VpsCertMeta();
 const sites = new VpsWebsites();
+const ajson = new AccountJson();
 
 const controllers = {
   async sslStats() {
@@ -103,6 +105,12 @@ const controllers = {
   availableActions() {
     return null;
   },
+
+  async getAccountData(req) {
+    if (!req?.query?.fields) return null;
+
+    return ajson.getData(req?.query?.fields.split(","));
+  },
 };
 
 export default eventHandler(async (event) => {
@@ -113,7 +121,10 @@ export default eventHandler(async (event) => {
       throw new Error(`[${event?.context?.params?.slug}] is not valid route`);
     }
 
-    const result = controllerFunc();
+    const headers = getHeaders(event);
+    const params = getRouterParams(event);
+    const query = getQuery(event);
+    const result = controllerFunc({ headers, params, query });
     if (result instanceof Promise) {
       return event.sendResponse(await result);
     }

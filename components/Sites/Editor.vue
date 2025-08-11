@@ -103,7 +103,7 @@ async function onSubmit(formData) {
         <Button class="ml-2" variant="outline">Add</Button>
       </slot>
     </DialogTrigger>
-    <DialogContent class="max-w-[95svw] max-h-[95svh] md:max-w-lg grid-rows-[auto_minmax(0,1fr)_auto]">
+    <DialogContent class="max-w-[95svw] max-h-[95svh] md:max-w-lg grid-rows-[auto_minmax(0,1fr)_auto]"  @interact-outside="(event) => event.preventDefault()">
       <DialogHeader>
         <DialogTitle class="font-semibold text-lg">Add Site</DialogTitle>
         <DialogDescription class="hidden">Description goes here</DialogDescription>

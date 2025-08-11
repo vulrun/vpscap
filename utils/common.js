@@ -304,3 +304,81 @@ export function sanitizeDomains(val) {
   val.sort();
   return cleanArray(val);
 }
+
+export function buildSmtpUrl({ host, port, user, pass, ssl = false }) {
+  if (!host) return;
+
+  // const smtpPort = port || (ssl ? 465 : 25);
+  const smtpPort = port ? `:${port}` : "";
+  const protocol = ssl ? "smtps" : "smtp";
+
+  let authPart = "";
+  if (user) {
+    if (pass) {
+      authPart = `${encodeURIComponent(user)}:${encodeURIComponent(pass)}@`;
+    } else {
+      authPart = `${encodeURIComponent(user)}@`;
+    }
+  } else if (pass) {
+    // Password without username is not allowed
+    return;
+  }
+
+  return `${protocol}://${authPart}${host}${smtpPort}`;
+}
+
+export function parseSmtpUrl(url) {
+  try {
+    if (url === "") return null;
+
+    const u = new URL(url);
+    return {
+      host: u.hostname,
+      port: u.port,
+      user: decodeURIComponent(u.username),
+      pass: decodeURIComponent(u.password),
+      ssl: u.protocol.startsWith("smtps"),
+    };
+  } catch (err) {
+    return undefined;
+  }
+}
+
+export function validateSmtpUrl(url) {
+  try {
+    if (!url) throw new Error("URL is required.");
+
+    const match = String(url).match(/^(?:(smtps?):\/\/)?(?:([^:@]+)?(?::([^@]+))?\@)?([^:\/]+)(?:\:(\d+))?$/);
+    if (!match) throw new Error("Invalid SMTP URL format. It should be like smtps://user:password@hostname:port");
+
+    // Extract parts of the URL
+    const [, protocol, username, password, host, port] = match;
+
+    if (!protocol) {
+      throw new Error("Protocol is required. Use 'smtp' or 'smtps'.");
+    }
+    if (!["smtp", "smtps"].includes(protocol.replace("://", ""))) {
+      throw new Error("Invalid protocol. Use 'smtp' or 'smtps'.");
+    }
+
+    if (!host) throw new Error("Host is required.");
+
+    const portNum = Number(port);
+    if (isNaN(portNum) || portNum < 1 || portNum > 65535) {
+      throw new Error("Invalid port. It should be a number between 1 and 65535.");
+    }
+
+    // if (!username) throw new Error("Username is required.");
+    // if (u.username && !u.password) {
+    //   throw new Error("Password is required when a username is provided.");
+    // }
+
+    if (!username && password) {
+      throw new Error("Username is required when a password is provided.");
+    }
+
+    return { valid: true, message: "SMTP URL is valid." };
+  } catch (err) {
+    return { valid: false, message: err?.message };
+  }
+}
