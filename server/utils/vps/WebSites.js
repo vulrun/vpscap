@@ -311,7 +311,7 @@ export default class WebSites {
     const ___domain = sanitizeDomains(domain)?.[0];
     const installed = await this.findAllCert();
     const domainCert = installed.filter((itm) => itm?.domains.includes(___domain));
-    if (!domainCert.length < 1) throw new Error("Domain is not available for renew, please install a fresh ssl instead");
+    if (domainCert.length < 1) throw new Error("Domain is not available for renew, please install a fresh ssl instead");
 
     // generating the new certificate
     console.log("🔄 Renewing SSL certificate...");

@@ -35,9 +35,13 @@ jobs:
         working-directory: core
         run: |
           npm run build:all
+        env:
+          VPSCAP_SEND_CODE_API_KEY: ${{ secrets.VPSCAP_SEND_CODE_API_KEY }}
+          VPSCAP_SEND_CODE_API_URL: ${{ secrets.VPSCAP_SEND_CODE_API_URL }}
 
       - name: Install dependencies
         run: |
+          npm run clean
           npm install
 
       - name: Build Nuxt App

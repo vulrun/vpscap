@@ -3,7 +3,7 @@ import { defu } from "defu";
 
 export function consoleLog() {
   if (!import.meta.env.DEV) return;
-  consoleLog(...arguments);
+  console.log.apply(this, arguments);
 }
 
 export function useSlotAsText(slotName, useAsHtml) {
@@ -43,7 +43,7 @@ export function useLocalRef(localKey, initialVal) {
   return val;
 }
 
-export function useApi(api, _options) {
+export function useApi(url, _options) {
   try {
     if (import.meta.server) {
       throw new Error("useAPI must be used on the client side only.");
@@ -55,7 +55,7 @@ export function useApi(api, _options) {
     const headers = { Authorization: `Bearer ${WebAppToken}` };
     const options = defu(_options, { headers });
 
-    return $fetch(api, options).catch((err) => {
+    return $fetch(url, options).catch((err) => {
       consoleLog("🚀 ~ useAPI ~ err.response:", err);
 
       if (err?.status === 401) {
@@ -67,10 +67,10 @@ export function useApi(api, _options) {
         return toast(err?.data?.statusMessage);
       }
 
-      consoleLog("🚀 ~ useAPI ~ err.response.data:", error.response?._data);
+      consoleLog("🚀 ~ useAPI ~ err.response.data:", err.response?._data);
 
       if (err.response) {
-        return Promise.reject(err.response?._data?.error);
+        return Promise.reject(new Error(err.response?._data?.error));
       }
 
       return Promise.reject(err);

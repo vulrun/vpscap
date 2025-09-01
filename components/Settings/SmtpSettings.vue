@@ -171,22 +171,22 @@ watch(
 
       <RadioGroup class="flex items-center gap-3" v-model="useByUrl">
         <LabelText>Use By:</LabelText>
-        <LabelBlock class="flex items-center leading-none">
+        <LabelBlock class="flex items-center leading-none cursor-pointer">
           <RadioGroupItem value="true" />
           <span class="pl-2">URL</span>
         </LabelBlock>
-        <LabelBlock class="flex items-center leading-none">
+        <LabelBlock class="flex items-center leading-none cursor-pointer">
           <RadioGroupItem value="false" />
           <span class="pl-2">Host</span>
         </LabelBlock>
       </RadioGroup>
 
-      <LabelBlock class="space-y-1" :class="{ disabled: useByUrl === 'false' }">
+      <LabelBlock class="space-y-1" :class="{ disabled: useByUrl != 'true' }" :key="useByUrl">
         <LabelText>SMTP URL</LabelText>
         <Input v-model="smtp.url" placeholder="smtp://user:pass@mail.example.com:587" />
       </LabelBlock>
 
-      <div class="grid grid-cols-2 gap-4" :class="{ disabled: useByUrl === 'true' }">
+      <div class="grid grid-cols-2 gap-4" :class="{ disabled: useByUrl == 'true' }">
         <LabelBlock class="space-y-1">
           <LabelText>SMTP Host</LabelText>
           <Input autocomplete="off" v-model="smtp.host" placeholder="mail.example.com" />

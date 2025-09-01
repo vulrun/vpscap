@@ -144,7 +144,7 @@ const installedCols = [
 
         <div class="py-10">
           <Skeleton v-if="monitoredCerts?.isLoading?.value" class="aspect-video" />
-          <CertsDataTable v-else :data="monitoredCerts?.result?.value?.certList" :columns="monitoredCols" :sorting="[{ id: 'remarks', desc: false }]" />
+          <CertsDataTable v-else :data="cleanArray(monitoredCerts?.result?.value?.certList)" :columns="monitoredCols" :sorting="[{ id: 'remarks', desc: false }]" />
         </div>
       </SimpleCard>
 
@@ -169,7 +169,7 @@ const installedCols = [
 
         <div class="py-10">
           <Skeleton v-if="installedCerts?.isLoading?.value" class="aspect-video" />
-          <CertsDataTable v-else :data="installedCerts?.result?.value?.certList" :columns="installedCols" :sorting="[{ id: 'remarks', desc: false }]" />
+          <CertsDataTable v-else :data="cleanArray(installedCerts?.result?.value?.certList)" :columns="installedCols" :sorting="[{ id: 'remarks', desc: false }]" />
         </div>
       </SimpleCard>
     </div>

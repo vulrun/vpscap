@@ -22,7 +22,7 @@ export default eventHandler((event) => {
     const errorMessage = err?.message || err?.statusMessage || err?.statusText || statusText || "oops, something went wrong";
     const statusMessage = err?.statusMessage || err?.statusText || statusText || "OOPS";
 
-    setResponseStatus(event, err?.statusCode || statusCode || 500, cleanStatusText(statusMessage));
+    setResponseStatus(event, err?.statusCode || statusCode || 400, cleanStatusText(statusMessage));
 
     if (runtimeConfig?.appEnv.startsWith("dev")) {
       return {

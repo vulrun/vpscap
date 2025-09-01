@@ -29,7 +29,7 @@ export default class NginxHandler {
     const isLocalIP = /^(https?\:\/\/)?(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2[0-9]|3[01])\.\d{1,3}\.\d{1,3})/i.test(target);
 
     // if (forceSSL === true && enableSSL === false) throw new Error("SSL must be enabled first.");
-    if (confType !== "serve" && !isHttpStr) throw new Error("Invalid protocol. Only HTTP and HTTPS URL(s) are allowed.");
+    if (confType !== "serve" && !isHttpStr) throw new Error("Invalid Target URL. Only HTTP and HTTPS URL(s) are allowed.");
     // if (confType !== "serve" && enableIndexing === true) throw new Error("Indexing only works with serve directories.");
 
     switch (confType) {

@@ -20,13 +20,13 @@ async function onSubmit() {
     isSubmitting.value = false;
   } catch (error) {
     isSubmitting.value = false;
-    toast(error?.message || "oops, something went wrong");
+    toast(error?.message || error || "oops, something went wrong");
   }
 }
 </script>
 
 <template>
-  <div :class="['flex', props.class]" v-bind="{ disabled: props?.disabled }">
+  <div :class="['flex', props?.class]" v-bind="{ disabled: props?.disabled }">
     <component :is="props?.asChild ? 'span' : 'button'" v-if="!isSubmitting" v-bind="$attrs" @click="onSubmit">
       <slot />
     </component>

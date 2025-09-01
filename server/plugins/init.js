@@ -19,6 +19,6 @@ export default defineNitroPlugin(async () => {
 
   // setting websites default conf
   const sites = new VpsWebsites();
-  await sites.rebuildDefaultConf(null, true);
   await sites.nginx.restart();
+  await sites.rebuildDefaultConf();
 });

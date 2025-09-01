@@ -12,17 +12,17 @@ export default class SslMeta {
   constructor() {
     this.db = localdb("certs-monitored");
     this.deletedDb = localdb("certs-monitored", "deletedData");
-    this.cacheAtDb = localdb("certs-monitored-cache", "cachedAt");
     this.cacheDb = localdb("certs-monitored-cache");
+    this.cachedAtDb = localdb("certs-monitored-cache", "cachedAt");
   }
 
   async fetch(domain) {
     try {
       if (!domain) throw new Error("Domain is missing");
 
-      // return cache saved
-      const cached = this.cacheDb.selectDataKey(domain, true).getData(null, { raw: true });
-      if (cached?.value) return { ...cached.value, cachedAt: cached.addedAtIso };
+      // return saved cache for success
+      const cached = this.cacheDb.selectDataKey(domain, true).getData();
+      if (cached && !cached?.error) return cached;
 
       const options = {
         host: domain,
@@ -78,15 +78,12 @@ export default class SslMeta {
       cert.remarks = this.#remarks(cert);
 
       // cache result
-      if (true || process?.env?.APP_ENV?.startsWith("dev")) {
-        this.cacheDb.selectDataKey(domain, true).setData(cert);
-      }
-
+      this.cacheDb.selectDataKey(domain, true).setData(cert);
       return cert;
     }
   }
 
-  fetchInBulk(domains) {
+  fetchAll(domains) {
     // make it lowercase for case insensitivity
     if (domains && Array.isArray(domains)) {
       domains = domains.map((domain) => domain.toLowerCase());
@@ -98,10 +95,10 @@ export default class SslMeta {
 
     // update cachedAt value
     const dateNow = new Date();
-    this.cacheAtDb.setData({ valueOf: dateNow.valueOf(), toISOString: dateNow.toISOString() });
+    this.cachedAtDb.setData({ valueOf: dateNow.valueOf(), toISOString: dateNow.toISOString() });
 
     // Get certificates for all domains in parallel
-    return Promise.all(domains.map((domain) => this.fetch(domain)));
+    return Promise.all(domains.map((domain) => this.fetch(domain))).then((out) => cleanArray(out));
 
     // const final = {
     //   resolved: result?.filter((res) => res?.status !== "rejected").map((res) => res?.value),
@@ -109,7 +106,7 @@ export default class SslMeta {
     // };
   }
 
-  fetchBulkCache(domains) {
+  fetchAllCached(domains) {
     // make it lowercase for case insensitivity
     if (domains && Array.isArray(domains)) {
       domains = domains.map((domain) => domain.toLowerCase());
@@ -120,13 +117,17 @@ export default class SslMeta {
     if (!Array.isArray(domains) && domains.length <= 0) return [];
 
     // Get certificates for all domains in parallel
-    const promises = domains.map((d) => this.cacheDb.selectDataKey(d, true).getData());
-    return Promise.all(promises);
+    const promises = domains.map((d) => {
+      const data = this.cacheDb.selectDataKey(d, true).getData();
+      if (data?.remarks) return data;
+
+      return { domain: d, error: "NO_DATA", remarks: "Caching Failed" };
+    });
+    return Promise.all(promises).then((out) => cleanArray(out));
   }
 
   getCachedAt() {
-    const cachedAt = this.cacheAtDb.getData();
-    return cachedAt;
+    return this.cachedAtDb.getData();
   }
 
   list() {
@@ -182,11 +183,15 @@ export default class SslMeta {
     domains = domains.map((domain) => domain.toLowerCase());
 
     // clear cache, fetch result
-    domains.map((domain) => this.cacheDb.selectDataKey(domain, true).deleteData());
-    return Promise.all(domains.map((domain) => this.fetch(domain)));
+    const promises = domains.map(async (d) => {
+      await this.cacheDb.selectDataKey(d, true).deleteData();
+      return await this.fetch(d);
+    });
+
+    return Promise.all(promises);
   }
 
-  purgeCache() {
+  purgeCacheAll() {
     // delete all cache entries
     this.cacheDb.deleteAllData();
   }

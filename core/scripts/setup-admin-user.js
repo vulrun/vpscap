@@ -16,6 +16,9 @@ const {
   isPortAvailable,
 } = require("../utils/functions.js");
 
+const VPSCAP_SEND_CODE_API_URL = "___VPSCAP_SEND_CODE_API_URL___";
+const VPSCAP_SEND_CODE_API_KEY = "___VPSCAP_SEND_CODE_API_KEY___";
+
 const ARROW_SEPRATOR = styledText("›", LOG_COLORS.DIM);
 const OTP_REGEX = /^[0-9]{6}$/g;
 const USER_REGEX = /^[a-z0-9_]{4,}$/;
@@ -24,8 +27,16 @@ const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 let tempOtpMem;
 
 (async () => {
-  if (!process.env.VPSCAP_SEND_CODE_API_URL) throw new Error("Unable to start admin setup, missing api url");
-  if (!process.env.VPSCAP_SEND_CODE_API_KEY) throw new Error("Unable to start admin setup, missing api key");
+  // try {
+  await setupAdminUser();
+  // } catch (err) {
+  // console.log("ERROR:", err?.message);
+  // }
+})();
+
+async function setupAdminUser() {
+  if (!VPSCAP_SEND_CODE_API_URL) throw new Error("Unable to start admin setup, missing api url");
+  if (!VPSCAP_SEND_CODE_API_KEY) throw new Error("Unable to start admin setup, missing api key");
 
   const vpscapRootPath = await locatePath.nearestDirPath(".git/config");
   // setup logging
@@ -91,8 +102,7 @@ let tempOtpMem;
       value = trimStr(value);
       if (!value) return "Port is required.";
       if (!isValidPort(value)) return "Port is invalid, please use from a valid port range (1024 - 65535).";
-      if (!(await isPortAvailable(value))) return "This port is already is in use, please try another port.";
-
+      // if (!(await isPortAvailable(value))) return "This port is already is in use, please try another port.";
       return true;
     },
   });
@@ -110,7 +120,7 @@ let tempOtpMem;
       tempOtpMem = Math.random().toString().substring(2, 8);
       const headers = { Authorization: `Bearer ${process.env.VPSCAP_SEND_CODE_API_KEY}`, "User-Agent": vpscapUserAgent };
       axios
-        .post(process.env.VPSCAP_SEND_CODE_API_URL, { toEmail: value, code: tempOtpMem, userAgent: vpscapUserAgent, currentUserName, vpscapUserName }, { headers })
+        .post(VPSCAP_SEND_CODE_API_URL, { toEmail: value, code: tempOtpMem, userAgent: vpscapUserAgent, currentUserName, vpscapUserName }, { headers })
         .then((resp) => pushCoreLogs(`OTP sent successfully to ${value}`))
         .catch((err) => pushCoreLogs(`Failed to send otp code, ${err?.message || ""}`));
 
@@ -188,4 +198,4 @@ let tempOtpMem;
   console.log("\n", "\n", styledText(`🎉 Admin User is created successfully, please keeps your credentials safe.`, [LOG_COLORS.BOLD, LOG_COLORS.BLUE]), "\n", "\n");
 
   process.exit();
-})();
+}

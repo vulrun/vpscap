@@ -95,7 +95,7 @@ const controllers = {
   async monitoredCerts() {
     return {
       cachedAt: await sslio.getCachedAt(),
-      certList: await sslio.fetchBulkCache(),
+      certList: await sslio.fetchAllCached(),
     };
   },
   async installedCerts() {

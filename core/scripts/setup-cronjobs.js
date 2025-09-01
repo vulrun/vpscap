@@ -10,7 +10,11 @@ const CRON_TAG_START = "###_BEGIN_VPSCAP_CRONJOBS_###";
 const CRON_TAG_END = "###_END_VPSCAP_CRONJOBS_###";
 
 (async () => {
-  await setupCronJobs();
+  try {
+    await setupCronJobs();
+  } catch (err) {
+    console.log("ERROR:", err?.message);
+  }
 })();
 
 async function setupCronJobs() {
@@ -18,7 +22,7 @@ async function setupCronJobs() {
   const cronBlock = getCronBlock(accountObj?.port, accountObj?.localDir);
 
   if (!cronBlock) {
-    return console.error("❌ Failed to set up cron jobs:", `unable to get port or localDir.`);
+    return console.error("❌ Failed to set up cron jobs:", `please setup admin user first.`);
   }
 
   try {

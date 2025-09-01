@@ -7,9 +7,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   const requiresAuth = to?.meta?.requiresAuth === true;
   const isPrivateRoute = requiresAuth || isRootPath;
   const isPublicRoute = !isPrivateRoute;
-  if (import.meta.env.DEV) {
-    console.log("🚀 ~ defineNuxtRouteMiddleware:", JSON.stringify({ path: to.path, webAppToken, requiresAuth, isPublicRoute, isRootPath, isServerApi, isPrivateRoute }, null, 2));
-  }
+  consoleLog("🚀 ~ defineNuxtRouteMiddleware:", JSON.stringify({ path: to.path, webAppToken, requiresAuth, isPublicRoute, isRootPath, isServerApi, isPrivateRoute }, null, 2));
 
   // redirect to root, just in case of serverApi
   // (we have already added checks, above to return for server calls)

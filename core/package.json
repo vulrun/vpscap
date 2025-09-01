@@ -17,6 +17,7 @@
     "envfile": "^7.1.0",
     "fs-extra": "^11.3.0",
     "glob": "^11.0.2",
+    "javascript-obfuscator": "^4.1.1",
     "prompts": "^2.4.2"
   },
   "devDependencies": {

@@ -19,7 +19,7 @@
     "pm2:reload": "export $(cat .env | xargs) && pm2 reload vpscap --update-env",
     "build:bin": "node ./core/build.js --all",
     "setup-vps-conf": "export $(cat .env | xargs) && sudo -E ./core/bin/setup-vps-conf",
-    "setup-cronjobs": "(crontab -l; echo \"0 0 * * * curl -s http://localhost:3010/api/public/renew-certs\") | crontab -",
+    "setup-cronjobs": "./core/bin/setup-cronjobs",
     "setup-admin-user": "./core/bin/setup-admin-user"
   },
   "dependencies": {
@@ -55,6 +55,7 @@
     "clsx": "^2.1.1",
     "shadcn-nuxt": "^2.2.0",
     "tailwind-merge": "^3.3.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "typescript": "^5.9.2"
   }
 }

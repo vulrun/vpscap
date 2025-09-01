@@ -16,7 +16,6 @@ const CONF_VPSCAP_NOTE = "\n###_MODIFIED_BY_VPSCAP_###\n\n";
     await updateNginxConf({ vpscapRootPath, accountObj });
     await someMoreTweaks();
   } catch (err) {
-    console.log("🚀 ~ err:", err);
     console.error("❌ Error, setting vps configuration ~", err?.message);
   }
 })();

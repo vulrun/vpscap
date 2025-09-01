@@ -74,6 +74,7 @@ async function loadComponent() {
   const saved = await fetchSettings();
 
   setRefValues(saved?.cronJobSettings);
+  isSubmitting.value = false;
   isLoading.value = false;
 }
 

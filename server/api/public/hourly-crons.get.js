@@ -15,7 +15,7 @@ export default eventHandler((event) => {
   try {
     // fetch fresh ssl monitors in background
     if (accountJson?.cronJobSettings?.monitored_certs_hourly_retry) {
-      sslm.fetchInBulk().then();
+      sslm.fetchAll().then();
     }
 
     return event.cronResponse("hourly cron executed.");

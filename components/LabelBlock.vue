@@ -1,4 +1,5 @@
 <script setup>
+defineOptions({ inheritAttrs: false });
 const { class: classes, ...attrs } = useAttrs();
 </script>
 

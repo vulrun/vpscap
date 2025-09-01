@@ -9,21 +9,21 @@ const ajson = new AccountJson();
 
 const controllers = {
   // monitored certs handlers
-  insertMonitoredCert({ body }) {
-    sslm.insert(body?.domains);
+  async insertMonitoredCert({ body }) {
+    await sslm.insert(body?.domains);
     return "Added successfully";
   },
-  deleteMonitoredCert({ body }) {
-    sslm.delete(body?.domains);
+  async deleteMonitoredCert({ body }) {
+    await sslm.delete(body?.domains);
     return "Deleted successfully";
   },
-  refreshMonitoredCert({ body }) {
-    sslm.hardRefresh(body?.domains);
+  async refreshMonitoredCert({ body }) {
+    await sslm.hardRefresh(body?.domains);
     return "Refreshed";
   },
   async purgeMonitoredCertsCache() {
-    await sslm.purgeCache();
-    await sslm.fetchInBulk();
+    await sslm.purgeCacheAll();
+    await sslm.fetchAll();
     return "Cache Purged";
   },
 
@@ -43,7 +43,7 @@ const controllers = {
 
   // web sites handlers
   async createSite({ body }) {
-    await site.create({ body });
+    await site.create(body);
     return "Site Added Successfully";
   },
   async updateSite({ body }) {
@@ -76,7 +76,7 @@ const controllers = {
     return "All Nginx Configuration Rebuilt";
   },
 
-  setAccountData(req) {
+  async setAccountData(req) {
     try {
       return ajson.setData(req?.body);
     } catch (err) {
