@@ -1,6 +1,11 @@
 import { createApp, h, ref, watch, useSlots } from "vue";
 import { defu } from "defu";
 
+export function consoleLog() {
+  if (!import.meta.env.DEV) return;
+  consoleLog(...arguments);
+}
+
 export function useSlotAsText(slotName, useAsHtml) {
   const slots = useSlots();
   const html = ref("");
@@ -27,32 +32,52 @@ export function useLocalRef(localKey, initialVal) {
   if (typeof window === "undefined") return ref(initialVal);
 
   // retrieve from local storage and save initial value
-  const storedValue = window.localStorage.getItem(localKey);
-  if (!storedValue) window.localStorage.setItem(localKey, JSON.stringify(initialVal));
+  const storedValue = $persist(localKey);
+  if (!storedValue) $persist(localKey, initialVal);
 
   // set the initial value
-  const val = ref(storedValue ? JSON.parse(storedValue) : initialVal);
+  const val = ref(storedValue || initialVal);
 
   // watch and update local storage when it changes
-  watch(val, (newValue) => {
-    window.localStorage.setItem(localKey, JSON.stringify(newValue));
-  });
-
+  watch(val, (newValue) => $persist(localKey, newValue));
   return val;
 }
 
-export function useApi(api, options) {
-  const headers = {};
-  headers.Authorization = `Bearer ${localStorage.getItem("WebAppToken") || ""}`;
-
-  return $fetch(api, defu(options || {}, { headers })).catch((error) => {
-    if (error?.status === 401) {
-      localStorage.removeItem("WebAppToken");
-      return navigateTo("/login");
+export function useApi(api, _options) {
+  try {
+    if (import.meta.server) {
+      throw new Error("useAPI must be used on the client side only.");
     }
 
-    return Promise.reject(new Error(error?.response?._data?.error || error?.message));
-  });
+    const WebAppToken = $persist("WebAppToken") || "";
+    if (!WebAppToken) throw new Error("NO_LOGIN_TOKEN");
+
+    const headers = { Authorization: `Bearer ${WebAppToken}` };
+    const options = defu(_options, { headers });
+
+    return $fetch(api, options).catch((err) => {
+      consoleLog("🚀 ~ useAPI ~ err.response:", err);
+
+      if (err?.status === 401) {
+        $persist("WebAppData", null);
+        $persist("WebAppToken", null);
+        return navigateTo("/login");
+      }
+      if (err?.data?.statusMessage) {
+        return toast(err?.data?.statusMessage);
+      }
+
+      consoleLog("🚀 ~ useAPI ~ err.response.data:", error.response?._data);
+
+      if (err.response) {
+        return Promise.reject(err.response?._data?.error);
+      }
+
+      return Promise.reject(err);
+    });
+  } catch (_err) {
+    return Promise.reject(_err);
+  }
 }
 
 export function useApiFetch(url, options) {

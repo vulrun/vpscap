@@ -1,5 +1,5 @@
 <script setup>
-definePageMeta({ layout: "dashboard" });
+definePageMeta({ layout: "dashboard", requiresAuth: true });
 </script>
 
 <template>

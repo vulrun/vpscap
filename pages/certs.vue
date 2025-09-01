@@ -1,5 +1,5 @@
 <script setup>
-definePageMeta({ layout: "dashboard" });
+definePageMeta({ layout: "dashboard", requiresAuth: true });
 import { ArrowUpDown, ChevronDown, CommandIcon, SearchIcon, PlusIcon, RefreshCwIcon, SortDesc, TrashIcon, ListRestartIcon } from "lucide-vue-next";
 import HoverText from "@/components/HoverText.vue";
 import HintButton from "@/components/HintButton.vue";

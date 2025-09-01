@@ -1,33 +1,50 @@
 export default defineNuxtRouteMiddleware(async (to) => {
   if (import.meta.server) return;
 
-  const webAppToken = localStorage.getItem("WebAppToken") || "";
-  const isPublicRoute = ["/login"].includes(to.path);
-  const isRootPath = to.path === "/";
+  const webAppToken = $persist("WebAppToken") || "";
   const isServerApi = to?.path?.startsWith("/api");
-  const isPrivateRoute = !isPublicRoute && !isRootPath && !isServerApi;
+  const isRootPath = to.path === "/";
+  const requiresAuth = to?.meta?.requiresAuth === true;
+  const isPrivateRoute = requiresAuth || isRootPath;
+  const isPublicRoute = !isPrivateRoute;
+  if (import.meta.env.DEV) {
+    console.log("🚀 ~ defineNuxtRouteMiddleware:", JSON.stringify({ path: to.path, webAppToken, requiresAuth, isPublicRoute, isRootPath, isServerApi, isPrivateRoute }, null, 2));
+  }
 
+  // redirect to root, just in case of serverApi
+  // (we have already added checks, above to return for server calls)
+  if (isServerApi) return navigateTo("/");
+
+  // if isPublicRoute with no token, do nothing
+  if (isPublicRoute && !webAppToken) return;
+
+  // if isPublicRoute and has token
   if (isPublicRoute && webAppToken) {
     try {
       await useApi("/api/verify");
       return navigateTo("/home");
     } catch (e) {
       console.warn(e);
+      return;
     }
   }
 
-  try {
-    if (!webAppToken) {
-      throw new Error("INVALID_SESSION");
-    }
-
-    if (isRootPath) {
-      await useApi("/api/verify");
-      return navigateTo("/home");
-    } else if (isPrivateRoute) {
-      await useApi("/api/verify");
-    }
-  } catch (error) {
-    navigateTo("/login");
+  // if isPrivateRoute and has no token
+  if (isPrivateRoute && !webAppToken) {
+    return navigateTo("/login");
   }
+
+  // if isPrivateRoute and has token
+  if (isPrivateRoute && webAppToken)
+    try {
+      const data = await useApi("/api/verify");
+      $persist("WebAppData", data);
+
+      if (isRootPath) {
+        return navigateTo("/home");
+      }
+    } catch (e) {
+      console.warn(e);
+      return navigateTo("/login");
+    }
 });

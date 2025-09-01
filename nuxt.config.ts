@@ -32,9 +32,7 @@ export default defineNuxtConfig({
     },
   },
   routeRules: {
-    "/": {
-      redirect: "/home",
-    },
+    // "/": { redirect: "/home" },
   },
   nitro: {
     // preset: "cloudflare_pages",

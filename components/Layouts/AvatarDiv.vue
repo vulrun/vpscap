@@ -7,8 +7,8 @@ const profile = ref({
 
 const isLoading = computed(() => !profile?.value?.name);
 
-onMounted(async () => {
-  const data = await useApi(`/api/verify`);
+onMounted(() => {
+  const data = $persist("WebAppData");
   profile.value = data?.profile;
 });
 </script>

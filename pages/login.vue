@@ -23,8 +23,9 @@ const loginFieldConfig = {
 
 async function onSubmit(form) {
   try {
-    localStorage.setItem("WebAppToken", encodeUserPass(form?.username, form?.password));
-    await useApi("/api/verify");
+    $persist("WebAppToken", encodeUserPass(form?.username, form?.password));
+    const data = await useApi("/api/verify");
+    $persist("WebAppData", data);
     navigateTo("/home");
   } catch (err) {
     toast.error(err?.message, { description: "Login failed, please try again" });

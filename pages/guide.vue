@@ -1,5 +1,5 @@
 <script setup>
-definePageMeta({ layout: "dashboard" });
+definePageMeta({ layout: "dashboard", requiresAuth: true });
 
 const { data, status, error, refresh, clear } = useAsyncData("prerequisite", () => useApi(`/api/verify`));
 const stepLabels = {

@@ -1,5 +1,5 @@
 <script setup>
-definePageMeta({ layout: "dashboard" });
+definePageMeta({ layout: "dashboard", requiresAuth: true });
 import { ShieldCheckIcon, RssIcon, Layers2Icon } from "lucide-vue-next";
 
 const pm2Stats = useApiFetch(`/api/fetch/pm2Stats`);

@@ -67,7 +67,8 @@ const navs = [
 });
 
 function doLogout() {
-  localStorage.removeItem("WebAppToken");
+  $persist("WebAppData", null);
+  $persist("WebAppToken", null);
   return navigateTo("/");
 }
 </script>

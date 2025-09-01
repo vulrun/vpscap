@@ -1,5 +1,5 @@
 <script setup>
-definePageMeta({ layout: "dashboard" });
+definePageMeta({ layout: "dashboard", requiresAuth: true });
 import { ArrowUpDown, ChevronDown, CommandIcon, SearchIcon, PlusIcon, RefreshCwIcon, ReplaceAllIcon } from "lucide-vue-next";
 import HoverText from "@/components/HoverText.vue";
 import DataTableColumnHeader from "@/components/DataTable/ColumnHeader.vue";
