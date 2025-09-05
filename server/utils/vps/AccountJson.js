@@ -5,9 +5,15 @@ export default class AccountJson {
   #filePath = fsPath.resolve(process?.env?.NUXT_LOCAL_DB_DIR || [process.cwd(), ".localdb/"], "account.json");
 
   constructor() {
+    if (AccountJson.instance) {
+      return AccountJson.instance;
+    }
+
     if (!fs.existsSync(this.#filePath)) {
       fs.writeFileSync(this.#filePath, JSON.stringify({}, null, 2), "utf8");
     }
+
+    AccountJson.instance = this;
   }
 
   readJson() {
@@ -47,6 +53,11 @@ export default class AccountJson {
   // Accepts single key or list of keys
   getData(keys) {
     const data = this.readJson();
+
+    // fetch all keys
+    if (keys === "*") {
+      return data;
+    }
 
     // fetch single key
     if (typeof keys === "string") {

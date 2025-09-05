@@ -10,15 +10,13 @@ import shell from "@@/server/utils/shell";
 import SslAcme from "@@/server/utils/vps/SslAcme";
 import SslMeta from "@@/server/utils/vps/SslMeta";
 import NginxHandler from "@@/server/utils/vps/Nginx";
-
-const LOCAL_DB_DIR = process?.env?.NUXT_LOCAL_DB_DIR;
+import AccountJson from "@@/server/utils/vps/AccountJson";
 
 export default class WebSites {
-  #accountFilePath = fsPath.resolve(LOCAL_DB_DIR, "account.json");
-  #confDirPath = fsPath.resolve(LOCAL_DB_DIR, "sites.conf.d");
-
   constructor() {
-    const accountObj = fs.readJsonSync(this.#accountFilePath, { throws: false });
+    const accountJson = new AccountJson();
+    const accountObj = accountJson.getData("*");
+
     if (!accountObj?.vpsUser) {
       console.log("Please setup admin user first");
       process.exit();
@@ -28,18 +26,19 @@ export default class WebSites {
     this.sslAcme = new SslAcme({ webSites: this, email: accountObj?.username });
     this.nginx = new NginxHandler({ webSites: this });
     this.nginxReload = debounce(() => this.nginx.reload(), 1000);
+    this.confDirPath = fsPath.resolve(accountObj?.localDir, "sites.conf.d");
     this.touch();
   }
 
   touch() {
-    if (fs.existsSync(this.#confDirPath) === false) {
-      fs.mkdirSync(this.#confDirPath);
+    if (fs.existsSync(this.confDirPath) === false) {
+      fs.mkdirSync(this.confDirPath);
     }
   }
 
   async list() {
-    if (!shell.test("-d", this.#confDirPath)) throw new Error("Invalid Path");
-    const confFiles = shell.find(this.#confDirPath);
+    if (!shell.test("-d", this.confDirPath)) throw new Error("Invalid Path");
+    const confFiles = shell.find(this.confDirPath);
     const sslDomains = await this.findSslDomains();
     const sslMonitors = await this.sslMeta.list();
 
@@ -172,7 +171,7 @@ export default class WebSites {
   }
 
   async rebuildDefaultConf() {
-    const defaultConfPath = fsPath.resolve(this.#confDirPath, "_default.conf");
+    const defaultConfPath = fsPath.resolve(this.confDirPath, "_default.conf");
     if (!shell.test("-f", defaultConfPath)) {
       return await this.#newDefaultConf();
     }
@@ -197,7 +196,7 @@ export default class WebSites {
   }
   async #setConfData(args) {
     if (!args?.confPath) {
-      args.confPath = `${this.#confDirPath}/${this.#generateFilename(args?.domain)}${args?.isDumped ? ".dump" : ".conf"}`;
+      args.confPath = `${this.confDirPath}/${this.#generateFilename(args?.domain)}${args?.isDumped ? ".dump" : ".conf"}`;
     }
 
     if (!process?.env?.APP_ENV?.startsWith("dev")) {
@@ -210,7 +209,7 @@ export default class WebSites {
     return result;
   }
   async #newDefaultConf(args) {
-    const confPath = this.#confDirPath + "/_default.conf";
+    const confPath = this.confDirPath + "/_default.conf";
 
     const result = await this.nginx.writeConf(confPath, {
       confType: "serve",
@@ -324,16 +323,9 @@ export default class WebSites {
       throw new Error(`🗿 Skipping, certificate installation on development server is not possible`);
     }
 
-    // fetch all installed certs
-    const installed = await this.findAllCert();
-    // choose certs expiring in 1 day
-    const expiring = installed.filter((itm) => itm?.daysLeft <= 1);
-    // filter invalid domains
-    const sanitized = expiring.filter((itm) => itm.domains.length);
+    // fetch all installed certs expiring in 1 day
+    const sanitized = await this.findCertsExpiringIn(1);
     const promises = sanitized.map((itm) => {
-      if (itm?.domains.length < 1) throw new Error("Domain is missing");
-      if (itm?.domains.length !== 1) throw new Error("Mulitple domains are not allowed");
-
       return this.sslAcme.issueCertificate(itm?.domains);
     });
 
@@ -342,6 +334,7 @@ export default class WebSites {
     await this.sslAcme.initialize();
     return await Promise.allSettled(promises);
   }
+
   async findAllCert() {
     try {
       const installed = await this.sslAcme.listCertificates();
@@ -367,6 +360,22 @@ export default class WebSites {
       .uniq()
       .sort()
       .value();
+  }
+  async findCertsExpiringIn(dayCount) {
+    // fetch all installed certs
+    const installed = await this.findAllCert();
+    // choose certs expiring in 1 day (dayCount)
+    const expiring = installed.filter((itm) => itm?.daysLeft <= (dayCount || -1));
+    // filter missing domains
+    const sanitized = expiring.filter((itm) => itm.domains.length);
+    // validating single domains only
+    const validated = sanitized.map((itm) => {
+      if (itm?.domains.length < 1) throw new Error("Domain is missing"); // this will never happen
+      if (itm?.domains.length !== 1) throw new Error("Mulitple domains are not allowed");
+      return itm;
+    });
+
+    return validated;
   }
   async listSslMappings(domain) {
     const result = await this.findCert(domain);

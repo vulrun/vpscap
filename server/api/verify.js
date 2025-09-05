@@ -1,25 +1,21 @@
 import fsPath from "node:path";
 import fs from "fs-extra";
-// import fs from "node:fs/promises";
-// import fs from "node:fs";
-// import os from "node:os";
 import crypto from "node:crypto";
 import packageJson from "@@/package.json";
+
 // import VpsCertBot from "@@/server/utils/vps/VpsCertbot";
 // import VpsCertMeta from "@@/server/utils/vps/VpsCertMeta";
 // import VpsWebsites from "@@/server/utils/vps/VpsWebsites";
 // import VpsAcmeSsl from "@@/server/utils/vps/VpsSslAcme";
-
-const LOCAL_DB_DIR = process?.env?.NUXT_LOCAL_DB_DIR || ".localdb/";
+import AccountJson from "@@/server/utils/vps/AccountJson";
 
 export default eventHandler(async (event) => {
   try {
-    const accountFilePath = fsPath.resolve(LOCAL_DB_DIR, "account.json");
-    const accountObj = fs.readJsonSync(accountFilePath);
-    if (!accountObj?.vpsUser) throw new Error("Please setup admin user first");
+    const accountJson = new AccountJson();
+    const accountObj = accountJson.getData("*");
+    if (!accountObj.vpsUser) throw new Error("Please setup admin user first");
 
     const deps = {};
-    // deps.vpscapLocalDir = fsPath.resolve(LOCAL_DB_DIR);
     deps.install_nginx = await isInstalled("nginx");
     deps.configure_vps = await isVpsConfigured();
     deps.install_pm2 = await isInstalled("pm2");
@@ -36,6 +32,7 @@ export default eventHandler(async (event) => {
       name: accountObj?.vpsUser,
       email: accountObj?.username,
       avatar: getGravatarUrl(accountObj?.username),
+      homeUrl: accountObj?.homeUrl,
     };
     resp.prerequisite = deps;
 

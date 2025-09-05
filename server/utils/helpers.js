@@ -1,9 +1,21 @@
-import fs from "node:fs";
 import fsPath from "node:path";
-import JsonDB from "./JsonDB";
+import fs from "fs-extra";
 import axios from "axios";
+import { minify } from "html-minifier";
+import nodemailer from "nodemailer";
+import Handlebars from "handlebars";
 import { findWorkspaceDir } from "pkg-types";
+import ExtendedJsonDb from "./ExtendedJsonDb";
+
 // import { sha256 as SHA256 } from "@noble/hashes/sha256";
+// import VpsAcmeSsl from "@@/server/utils/vps/SslAcme";
+import VpsCertMeta from "@@/server/utils/vps/SslMeta";
+import VpsWebsites from "@@/server/utils/vps/WebSites";
+import AccountJson from "@@/server/utils/vps/AccountJson";
+
+const site = new VpsWebsites();
+const sslm = new VpsCertMeta();
+const accountJson = new AccountJson();
 
 export function fetchApi(...args) {
   return axios
@@ -78,60 +90,6 @@ export function logRequest(method, url, status, duration) {
   console.log(`[${new Date().toISOString()}] ${method} ${url} ~ ${status} ~ ${duration}ms`);
 }
 
-class ExtendedJsonDb extends JsonDB {
-  constructor(...args) {
-    super(...args);
-    this.selectDataKey(args?.[0]?.dataKey);
-  }
-
-  selectDataKey(dataKey, doHexEncode) {
-    this.dataKey = doHexEncode ? hexEncode(dataKey || "data") : dataKey || "data";
-    return this;
-  }
-
-  setData(data, ttl) {
-    const doc = {};
-    const now = new Date();
-    doc.addedAtMs = now.valueOf();
-    doc.addedAtIso = now.toISOString();
-
-    if (ttl) {
-      const ttlMs = ms("" + ttl);
-      const expiry = new Date(Date.now() + ttlMs);
-      doc.expiration = expiry.valueOf();
-      doc.expirationIso = expiry.toISOString();
-      doc.expirationRaw = ttl;
-    }
-
-    doc.value = data;
-    return super.set(this.dataKey, doc);
-  }
-
-  getData(defaults, options) {
-    const doc = super.get(this.dataKey);
-    if (!doc) return defaults || null;
-
-    const now = Date.now();
-    const exp = doc?.expiration;
-
-    if (exp && now > exp) {
-      this.deleteData();
-      return defaults || null;
-    }
-
-    if (options?.raw) return doc;
-    return doc?.value || defaults || null;
-  }
-
-  deleteData() {
-    return super.delete(this.dataKey);
-  }
-
-  deleteAllData() {
-    return super.deleteAll();
-  }
-}
-
 export function localdb(fileName, dataKey) {
   if (!fileName) throw new Error("DB filename is missing");
 
@@ -141,4 +99,190 @@ export function localdb(fileName, dataKey) {
 export async function getLocalDbDirPath(addPath) {
   const workspaceDir = await findWorkspaceDir();
   return fsPath.resolve(workspaceDir, addPath ?? ".localdb");
+}
+
+export async function sendEmailNow({ to, subject, body }) {
+  try {
+    if (!to) throw new Error("`to` is missing for sendEmailNow.");
+    if (!subject) throw new Error("`subject` is missing for sendEmailNow.");
+    if (!body) throw new Error("`body` is missing for sendEmailNow.");
+
+    const config = accountJson.getData(["smtpUrl", "smtpFrom", "smtpUseByUrl", "smtpTestStatus"]);
+    if (!config?.smtpUrl) throw new Error("`smtpUrl` is missing for sendEmailNow.");
+    if (!config?.smtpFrom) throw new Error("`smtpFrom` is missing for sendEmailNow.");
+
+    const transporter = nodemailer.createTransport(config?.smtpUrl);
+    await transporter.verify();
+
+    const mailOptions = {};
+    mailOptions.from = config?.smtpFrom;
+    mailOptions.to = to;
+    mailOptions.subject = subject;
+    mailOptions.headers = {
+      "List-Help": `<mailto:${config?.smtpFrom}?subject=NEED-HELP>`,
+      "List-Unsubscribe": `<mailto:${config?.smtpFrom}?subject=UNSUBSCRIBE>`,
+    };
+    if (body.startsWith(`<!DOCTYPE`) || body.startsWith(`<html`)) {
+      mailOptions.html = body;
+    } else {
+      mailOptions.text = body;
+    }
+
+    const mailResp = await transporter.sendMail(mailOptions);
+    console.log("🚀 ~ sendEmailNow ~ mailResp:", mailResp);
+
+    const sentInfo = {};
+    sentInfo.response = String(mailResp?.response || "").toUpperCase();
+    sentInfo.success = mailResp?.response.includes("OK");
+    sentInfo.remarks = `Email successfully sent to \`${mailResp?.accepted.join(", ")}\`.`;
+    sentInfo.__raw = mailResp;
+
+    return sentInfo;
+  } catch (err) {
+    console.log("❌ ~ sendEmailNow ~ err:", err);
+    return {
+      success: false,
+      remarks: `Failed to send email. ${err?.message}`,
+      message: err?.message,
+      response: err?.message,
+      __raw: null,
+    };
+  }
+}
+
+export async function getAlertsHtml(context) {
+  Handlebars.registerHelper("ternary", function (test, yes, no) {
+    return test ? yes : no;
+  });
+
+  // LOAD HTML TEMPLATE
+  const templatePath = fsPath.join(process.cwd(), "server/utils/raw/ssl-alert-template.html");
+  const templateRaw = fs.readFileSync(templatePath, "utf-8");
+  const templateHtml = Handlebars.compile(templateRaw)(context || {});
+
+  return minify(templateHtml, {
+    minifyCSS: true,
+    removeComments: true,
+    collapseWhitespace: true,
+  });
+}
+
+export async function runCronJobTask(jobSlug, runForcefully) {
+  if (!jobSlug) throw new Error("CronJobTask slug is missing");
+
+  const accountObj = accountJson.getData("*");
+  if (!runForcefully && !accountObj?.cronJobSettings?.[jobSlug]) {
+    console.log("Skipping CronJobTask as per settings.");
+    return;
+  }
+
+  switch (jobSlug) {
+    // renew ssl installs certificates
+    case "installed_certs_daily_renew": {
+      await site.renewCerts();
+      await site.nginxReload();
+      break;
+    }
+
+    // purge and refresh all ssl monitors cache
+    case "monitored_certs_daily_refresh": {
+      await sslm.purgeCacheAll();
+      await sslm.fetchAll();
+      break;
+    }
+
+    // fetch fresh ssl monitors in background
+    case "monitored_certs_hourly_retry": {
+      await sslm.fetchAll();
+      break;
+    }
+
+    case "installed_certs_daily_alerts": {
+      const expiringCerts = await site.findCertsExpiringIn(7);
+      if (!expiringCerts.length) return; // exit, if there are no certs
+
+      const riskyCount = expiringCerts.reduce((acc, crt) => (crt.daysLeft <= 3 ? acc + 1 : acc), 0);
+
+      const subject = `[Action Required] SSL Certificates expiring soon` + (!riskyCount ? "" : ` (${riskyCount})`);
+      const heading = `SSL Certificate Expiry Alert`;
+      const serverName = `${accountObj.vpsUser}@${accountObj.hostName}`;
+      const generatedAt = new Date().toISOString().split(".")[0].replace("T", " ");
+      const dashboardUrl = `${accountObj?.homeUrl}/#settings`;
+      const unsubscribeUrl = `${accountObj?.homeUrl}/#settings/notifications`;
+
+      const certs = expiringCerts.map((crt) => ({
+        notes: crt?.domains.filter((c) => c !== crt?.domain).join(", "),
+        domain: crt?.domain,
+        issuer: `${crt?.issuedBy?.organizationName}, ${crt?.issuedBy?.countryName}`,
+        expiresOn: `${(crt?.expiresAtIso || "")?.substring(0, 10)}`,
+        daysLeft: crt?.daysLeft == 1 ? `${crt?.daysLeft} day` : crt?.daysLeft > 0 ? `${crt?.daysLeft} days` : `EXPIRED`,
+        badgeClass: crt?.daysLeft <= 1 ? `badge-red` : crt?.daysLeft <= 3 ? `badge-orange` : crt?.daysLeft <= 7 ? `badge-yellow` : `badge-gray`,
+      }));
+
+      const html = await getAlertsHtml({
+        subject,
+        heading,
+        serverName,
+        generatedAt,
+        dashboardUrl,
+        unsubscribeUrl,
+        riskyCount,
+        certs,
+      });
+
+      const sentInfo = await sendEmailNow({
+        to: accountObj?.username,
+        subject,
+        body: html,
+      });
+
+      return sentInfo;
+    }
+
+    // todo: add daily alerts code
+    case "monitored_certs_daily_alerts": {
+      const expiringCerts = await sslm.getCertsExpiringIn(7);
+      if (!expiringCerts.length) return; // exit, if there are no certs
+
+      const riskyCount = expiringCerts.reduce((acc, crt) => (crt.days_left <= 3 ? acc + 1 : acc), 0);
+
+      const subject = `[Action Required] Monitored Certificates expiring soon` + (!riskyCount ? "" : ` (${riskyCount})`);
+      const heading = `Monitored Certificate Expiry Alert`;
+      const serverName = `${accountObj.vpsUser}@${accountObj.hostName}`;
+      const generatedAt = new Date().toISOString().split(".")[0].replace("T", " ");
+      const dashboardUrl = `${accountObj?.homeUrl}/#settings`;
+      const unsubscribeUrl = `${accountObj?.homeUrl}/#settings/notifications`;
+
+      const certs = expiringCerts.map((crt) => ({
+        notes: crt?.subject_alt_name.filter((c) => c !== crt?.domain).join(", "),
+        domain: crt?.domain,
+        issuer: `${crt?.issuer_org}, ${crt?.issuer_loc}`,
+        expiresOn: `${(crt?.expiry || "")?.substring(0, 10)}`,
+        daysLeft: crt?.days_left == 1 ? `${crt?.days_left} day` : crt?.days_left > 0 ? `${crt?.days_left} days` : `EXPIRED`,
+        badgeClass: crt?.days_left <= 1 ? `badge-red` : crt?.days_left <= 3 ? `badge-orange` : crt?.days_left <= 7 ? `badge-yellow` : `badge-gray`,
+      }));
+
+      const html = await getAlertsHtml({
+        subject,
+        heading,
+        serverName,
+        generatedAt,
+        dashboardUrl,
+        unsubscribeUrl,
+        riskyCount,
+        certs,
+      });
+
+      const sentInfo = await sendEmailNow({
+        to: accountObj?.username,
+        subject,
+        body: html,
+      });
+
+      return sentInfo;
+    }
+
+    default:
+      throw new Error("Invalid CronJobTask");
+  }
 }

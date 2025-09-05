@@ -84,14 +84,25 @@ const controllers = {
     }
   },
 
-  sendSmtpTestEmail(req) {
-    // todo: add code to send a test email
-    const smtpTestStatus = { exit: 1 };
+  async sendSmtpTestEmail(req) {
+    const { username, vpsUser } = ajson.getData(["username", "vpsUser"]);
+    const sentInfo = await sendEmailNow({
+      to: username,
+      subject: "SMTP Test Email",
+      body: `This is a test email sent from VPS server (${vpsUser}).`,
+    });
 
+    const smtpTestStatus = {
+      exit: sentInfo?.success ? 0 : 1,
+      note: sentInfo?.remarks,
+    };
     return ajson.setData({ smtpTestStatus });
   },
 
-  setCronJobs() {},
+  async triggerCronJob(req) {
+    const jobSlug = req?.body?.jobSlug;
+    return await runCronJobTask(jobSlug, true);
+  },
 };
 
 export default eventHandler(async (event) => {
@@ -106,12 +117,12 @@ export default eventHandler(async (event) => {
     const params = getRouterParams(event);
     const query = getQuery(event);
     const body = await readBody(event);
-    const result = controllerFunc({ headers, params, query, body });
+    const result = controllerFunc({ event, headers, params, query, body });
     if (result instanceof Promise) {
-      return event.sendResponse(await result);
+      return event.sendResponse((await result) || "RESPONSE_UNDEFINED");
     }
 
-    return event.sendResponse(result);
+    return event.sendResponse(result || "RESPONSE_UNDEFINED");
   } catch (err) {
     return event.errorResponse(err);
   }

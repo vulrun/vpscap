@@ -196,6 +196,23 @@ export default class SslMeta {
     this.cacheDb.deleteAllData();
   }
 
+  async getCertsExpiringIn(dayCount) {
+    // fetch all installed certs
+    const monitored = await this.fetchAllCached();
+    // choose certs expiring in 1 day (dayCount)
+    const expiring = monitored.filter((itm) => itm?.days_left <= (dayCount || -1));
+    // filter missing domains
+    const sanitized = expiring.filter((itm) => itm.validNames.length);
+    // validating single domains only
+    const validated = sanitized.map((itm) => {
+      if (itm?.validNames.length < 1) throw new Error("Domain is missing"); // this will never happen
+      if (itm?.validNames.length !== 1) throw new Error("Mulitple domains are not allowed");
+      return itm;
+    });
+
+    return validated;
+  }
+
   #daysLeft(validTo) {
     const currentDate = new Date();
     const validToDate = new Date(validTo);

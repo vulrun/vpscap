@@ -67,9 +67,9 @@ export default class SslAcme {
       tmpData.altNames = cleanArray(typeof _parsed?.subject?.altNames === "string" ? _parsed?.subject?.altNames?.split(" ") : _parsed?.subject?.altNames);
       tmpData.issuedBy = _parsed?.issuer;
       tmpData.issuedAt = new Date(certInfo?.validity?.notBefore).valueOf();
-      tmpData.issuedAtIso = certInfo?.validity?.notBefore;
+      tmpData.issuedAtIso = new Date(certInfo?.validity?.notBefore).toISOString();
       tmpData.expiresAt = new Date(certInfo?.validity?.notAfter).valueOf();
-      tmpData.expiresAtIso = certInfo?.validity?.notAfter;
+      tmpData.expiresAtIso = new Date(certInfo?.validity?.notAfter).toISOString();
       data.push(tmpData);
     }
 

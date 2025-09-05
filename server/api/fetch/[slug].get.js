@@ -16,7 +16,7 @@ const cleanUniqArray = (...args) => lo.uniq(cleanArray(...args));
 
 const sslio = new VpsCertMeta();
 const sites = new VpsWebsites();
-const ajson = new AccountJson();
+const accountJson = new AccountJson();
 
 const controllers = {
   async sslStats() {
@@ -34,7 +34,7 @@ const controllers = {
   async pm2Stats() {
     return `## running, ## stopped, ## errored services`;
   },
-  async serverInfo() {
+  async serverInfo({ event, headers }) {
     const [Hostname, FQDNs, Public_IP, Private_IP1, Private_IP2] = await Promise.all([
       //
       sudoExec("hostname"),
@@ -44,16 +44,19 @@ const controllers = {
       sudoExec("hostname -I"),
     ]);
 
+    const protocol = getRequestProtocol(event);
+    accountJson.setData({
+      homeUrl: `${protocol}://${headers?.host}`,
+      hostName: os.hostname(),
+    });
+
+    const private_ips = cleanUniqArray(Private_IP1.split(/\s/), Private_IP2.split(/\s/)).filter((ip) => !ipv6Regex.test(ip));
     return [
+      //
       { label: "Hostname", value: os.hostname() },
       { label: "FQDNs", value: cleanUniqArray(FQDNs.split(/\s/)).join(`&nbsp;&bull;&nbsp;`) },
       { label: "Public IP", value: Public_IP },
-      {
-        label: "Private IP",
-        value: cleanUniqArray(Private_IP1.split(/\s/), Private_IP2.split(/\s/))
-          .filter((ip) => !ipv6Regex.test(ip))
-          .join(`&nbsp;&bull;&nbsp;`),
-      },
+      { label: "Private IP", value: private_ips.join(`&nbsp;&bull;&nbsp;`) },
       { label: "Up Time", value: formatDuration(os.uptime()) },
       { label: "Server CPU", value: `${cleanUniqArray(os.cpus().map((i) => i?.model))} (${os.cpus().length} cores)` },
     ];
@@ -113,7 +116,7 @@ const controllers = {
   async getAccountData(req) {
     if (!req?.query?.fields) return null;
 
-    return ajson.getData(req?.query?.fields.split(","));
+    return accountJson.getData(req?.query?.fields.split(","));
   },
 };
 
@@ -128,12 +131,12 @@ export default eventHandler(async (event) => {
     const headers = getHeaders(event);
     const params = getRouterParams(event);
     const query = getQuery(event);
-    const result = controllerFunc({ headers, params, query });
+    const result = controllerFunc({ event, headers, params, query });
     if (result instanceof Promise) {
-      return event.sendResponse(await result);
+      return event.sendResponse((await result) || "RESPONSE_UNDEFINED");
     }
 
-    return event.sendResponse(result);
+    return event.sendResponse(result || "RESPONSE_UNDEFINED");
   } catch (err) {
     console.log("🚀 ~ eventHandler ~ err:", err);
     return event.errorResponse(err);
