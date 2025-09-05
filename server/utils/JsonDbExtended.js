@@ -1,6 +1,6 @@
-import JsonDB from "./JsonDB";
+import JsonDb from "./JsonDb";
 
-export default class ExtendedJsonDb extends JsonDB {
+export default class JsonDbExtended extends JsonDb {
   constructor(...args) {
     super(...args);
     this.selectDataKey(args?.[0]?.dataKey);

@@ -95,7 +95,7 @@ class JsonHandler {
   }
 }
 
-export default class JsonDB {
+export default class JsonDb {
   constructor(options) {
     this.messages = { errors };
     this.cwd = options?.["cwd"];

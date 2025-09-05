@@ -1,19 +1,20 @@
 import fsPath from "node:path";
 import fs from "fs-extra";
-// import fs from "node:fs/promises";
-// import fs from "node:fs";
-// import os from "node:os";
 import dns from "node:dns/promises";
 import lo from "lodash";
 // import { z } from "zod";
 import shell from "@@/server/utils/shell";
 import SslAcme from "@@/server/utils/vps/SslAcme";
 import SslMeta from "@@/server/utils/vps/SslMeta";
-import NginxHandler from "@@/server/utils/vps/Nginx";
+import NginxHandler from "@@/server/utils/vps/NginxHandler";
 import AccountJson from "@@/server/utils/vps/AccountJson";
 
 export default class WebSites {
   constructor() {
+    if (WebSites.instance) {
+      return WebSites.instance;
+    }
+
     const accountJson = new AccountJson();
     const accountObj = accountJson.getData("*");
 
@@ -28,6 +29,8 @@ export default class WebSites {
     this.nginxReload = debounce(() => this.nginx.reload(), 1000);
     this.confDirPath = fsPath.resolve(accountObj?.localDir, "sites.conf.d");
     this.touch();
+
+    WebSites.instance = this;
   }
 
   touch() {
@@ -36,11 +39,11 @@ export default class WebSites {
     }
   }
 
-  async list() {
+  async list(options) {
     if (!shell.test("-d", this.confDirPath)) throw new Error("Invalid Path");
     const confFiles = shell.find(this.confDirPath);
-    const sslDomains = await this.findSslDomains();
-    const sslMonitors = await this.sslMeta.list();
+    const sslDomains = options?.minimal ? [] : await this.findSslDomains();
+    const sslMonitors = options?.minimal ? [] : await this.sslMeta.list();
 
     const data = [];
     for (const confPath of confFiles) {
@@ -337,8 +340,9 @@ export default class WebSites {
 
   async findAllCert() {
     try {
+      const activeSites = await this.findActiveSites();
       const installed = await this.sslAcme.listCertificates();
-      return this.#unwindCerts(installed);
+      return this.#unwindCerts(installed, activeSites);
     } catch (error) {
       return [];
     }
@@ -352,10 +356,24 @@ export default class WebSites {
     return [].concat(certs)?.[0];
   }
   async findSslDomains() {
-    const certs = await this.findCert();
+    const installed = await this.sslAcme.listCertificates();
+    const certs = this.#unwindCerts(installed);
+
     return lo([])
       .concat(certs)
       .map((itm) => itm?.altNames)
+      .flattenDeep()
+      .uniq()
+      .sort()
+      .value();
+  }
+  async findActiveSites() {
+    const sites = await this.list({ minimal: true });
+
+    return lo([])
+      .concat(sites)
+      .filter((itm) => itm?.isActive)
+      .map((itm) => itm?.domain)
       .flattenDeep()
       .uniq()
       .sort()
@@ -375,7 +393,7 @@ export default class WebSites {
       return itm;
     });
 
-    return validated;
+    return validated.sort((a, b) => a?.daysLeft - b?.daysLeft);
   }
   async listSslMappings(domain) {
     const result = await this.findCert(domain);
@@ -394,12 +412,21 @@ export default class WebSites {
 
     return lo.filter(certs, (c) => !c?.isExpired && domain.includes(c?.domain));
   }
-  #unwindCerts(certs) {
+  #unwindCerts(certs, activeSites) {
+    const getRemarks = ({ inActive, daysLeft }) => {
+      if (inActive) {
+        return daysLeft > 0 ? `CONF_NF: ${daysLeft} days left` : "CONF_NF";
+      }
+
+      return daysLeft > 0 ? `${daysLeft} days left` : "EXPIRED";
+    };
+
     const domainsMap = [];
     for (const cert of certs) {
       for (const domain of cert?.altNames) {
         // const validNames = this.#isWildcardMatch(domain, n)
         const daysLeft = this.#daysLeft(cert?.expiresAt);
+        const inActive = ![].concat(activeSites).includes(domain);
 
         domainsMap.push({
           ...cert,
@@ -407,7 +434,7 @@ export default class WebSites {
           isValid: daysLeft > 0,
           isExpired: daysLeft <= 0,
           daysLeft,
-          remarks: daysLeft > 0 ? `${daysLeft} days left` : "EXPIRED",
+          remarks: getRemarks({ inActive, daysLeft }),
           domain: domain,
           domains: sanitizeDomains(domain),
         });

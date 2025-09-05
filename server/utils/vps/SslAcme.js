@@ -1,34 +1,43 @@
 import fsPath from "node:path";
 import fs from "fs-extra";
-// import fs from "node:fs/promises";
-// import fs from "node:fs";
-// import os from "node:os";
 import lo from "lodash";
 import shell from "@@/server/utils/shell";
 import acme from "acme-client";
 import forge from "node-forge";
 import crypto from "node:crypto";
 
-const cleanArray = (val) => [].concat(val).filter(Boolean);
-const LOCAL_DB_DIR = process?.env?.NUXT_LOCAL_DB_DIR || ".localdb/";
-const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
 export default class SslAcme {
-  #certsRootPath = fsPath.resolve(LOCAL_DB_DIR, "acme-ssl");
-  #certsLivePath = fsPath.resolve(LOCAL_DB_DIR, "acme-ssl", "certs");
-  #certsTrashPath = fsPath.resolve(LOCAL_DB_DIR, "acme-ssl", "trashed-certs");
-  #challengesPath = fsPath.resolve(LOCAL_DB_DIR, "acme-ssl", "challenges");
-  #accountKeyPath = fsPath.resolve(LOCAL_DB_DIR, "acme-ssl", "account-key.pem");
-  #accountObjPath = fsPath.resolve(LOCAL_DB_DIR, "acme-ssl", "account-acme.json");
-  #sslDhParamsPath = fsPath.resolve(LOCAL_DB_DIR, "acme-ssl", "ssl-dhparams.pem");
-  #sslOptionsNginx = fsPath.resolve(LOCAL_DB_DIR, "acme-ssl", "options-ssl-nginx.conf");
-
   #client;
+  #certsRootPath;
+  #certsLivePath;
+  #certsTrashPath;
+  #challengesPath;
+  #accountKeyPath;
+  #accountObjPath;
+  #sslDhParamsPath;
+  #sslOptionsNginx;
 
   constructor(args) {
+    if (SslAcme.instance) {
+      return SslAcme.instance;
+    }
+
+    const accountJson = new AccountJson();
+    this.#certsRootPath = fsPath.resolve(accountJson.dirPath, "acme-ssl");
+    this.#certsLivePath = fsPath.resolve(accountJson.dirPath, "acme-ssl", "certs");
+    this.#certsTrashPath = fsPath.resolve(accountJson.dirPath, "acme-ssl", "trashed-certs");
+    this.#challengesPath = fsPath.resolve(accountJson.dirPath, "acme-ssl", "challenges");
+    this.#accountKeyPath = fsPath.resolve(accountJson.dirPath, "acme-ssl", "account-key.pem");
+    this.#accountObjPath = fsPath.resolve(accountJson.dirPath, "acme-ssl", "account-acme.json");
+    this.#sslDhParamsPath = fsPath.resolve(accountJson.dirPath, "acme-ssl", "ssl-dhparams.pem");
+    this.#sslOptionsNginx = fsPath.resolve(accountJson.dirPath, "acme-ssl", "options-ssl-nginx.conf");
+
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(args?.email)) throw new Error("Invalid Email Provided");
     this.email = args?.email;
     this.#setupDirectories();
+
+    SslAcme.instance = this;
   }
 
   async listCertificates() {

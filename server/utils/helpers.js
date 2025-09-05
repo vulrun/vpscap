@@ -4,18 +4,12 @@ import axios from "axios";
 import { minify } from "html-minifier";
 import nodemailer from "nodemailer";
 import Handlebars from "handlebars";
-import { findWorkspaceDir } from "pkg-types";
-import ExtendedJsonDb from "./ExtendedJsonDb";
+import JsonDbExtended from "./JsonDbExtended";
 
 // import { sha256 as SHA256 } from "@noble/hashes/sha256";
-// import VpsAcmeSsl from "@@/server/utils/vps/SslAcme";
 import VpsCertMeta from "@@/server/utils/vps/SslMeta";
-import VpsWebsites from "@@/server/utils/vps/WebSites";
+import VpsWebSites from "@@/server/utils/vps/WebSites";
 import AccountJson from "@@/server/utils/vps/AccountJson";
-
-const site = new VpsWebsites();
-const sslm = new VpsCertMeta();
-const accountJson = new AccountJson();
 
 export function fetchApi(...args) {
   return axios
@@ -93,12 +87,7 @@ export function logRequest(method, url, status, duration) {
 export function localdb(fileName, dataKey) {
   if (!fileName) throw new Error("DB filename is missing");
 
-  return new ExtendedJsonDb({ dbFolder: ".localdb", dbName: fileName, dataKey });
-}
-
-export async function getLocalDbDirPath(addPath) {
-  const workspaceDir = await findWorkspaceDir();
-  return fsPath.resolve(workspaceDir, addPath ?? ".localdb");
+  return new JsonDbExtended({ dbFolder: ".localdb", dbName: fileName, dataKey });
 }
 
 export async function sendEmailNow({ to, subject, body }) {
@@ -107,7 +96,8 @@ export async function sendEmailNow({ to, subject, body }) {
     if (!subject) throw new Error("`subject` is missing for sendEmailNow.");
     if (!body) throw new Error("`body` is missing for sendEmailNow.");
 
-    const config = accountJson.getData(["smtpUrl", "smtpFrom", "smtpUseByUrl", "smtpTestStatus"]);
+    const accJson = new AccountJson();
+    const config = accJson.getData(["smtpUrl", "smtpFrom", "smtpUseByUrl", "smtpTestStatus"]);
     if (!config?.smtpUrl) throw new Error("`smtpUrl` is missing for sendEmailNow.");
     if (!config?.smtpFrom) throw new Error("`smtpFrom` is missing for sendEmailNow.");
 
@@ -170,7 +160,11 @@ export async function getAlertsHtml(context) {
 export async function runCronJobTask(jobSlug, runForcefully) {
   if (!jobSlug) throw new Error("CronJobTask slug is missing");
 
-  const accountObj = accountJson.getData("*");
+  const accJson = new AccountJson();
+  const vpsMeta = new VpsCertMeta();
+  const vpsSite = new VpsWebSites();
+
+  const accountObj = accJson.getData("*");
   if (!runForcefully && !accountObj?.cronJobSettings?.[jobSlug]) {
     console.log("Skipping CronJobTask as per settings.");
     return;
@@ -179,26 +173,26 @@ export async function runCronJobTask(jobSlug, runForcefully) {
   switch (jobSlug) {
     // renew ssl installs certificates
     case "installed_certs_daily_renew": {
-      await site.renewCerts();
-      await site.nginxReload();
+      await vpsSite.renewCerts();
+      await vpsSite.nginxReload();
       break;
     }
 
     // purge and refresh all ssl monitors cache
     case "monitored_certs_daily_refresh": {
-      await sslm.purgeCacheAll();
-      await sslm.fetchAll();
+      await vpsMeta.purgeCacheAll();
+      await vpsMeta.fetchAll();
       break;
     }
 
     // fetch fresh ssl monitors in background
     case "monitored_certs_hourly_retry": {
-      await sslm.fetchAll();
+      await vpsMeta.fetchAll();
       break;
     }
 
     case "installed_certs_daily_alerts": {
-      const expiringCerts = await site.findCertsExpiringIn(7);
+      const expiringCerts = await vpsSite.findCertsExpiringIn(7);
       if (!expiringCerts.length) return; // exit, if there are no certs
 
       const riskyCount = expiringCerts.reduce((acc, crt) => (crt.daysLeft <= 3 ? acc + 1 : acc), 0);
@@ -241,7 +235,7 @@ export async function runCronJobTask(jobSlug, runForcefully) {
 
     // todo: add daily alerts code
     case "monitored_certs_daily_alerts": {
-      const expiringCerts = await sslm.getCertsExpiringIn(7);
+      const expiringCerts = await vpsMeta.getCertsExpiringIn(7);
       if (!expiringCerts.length) return; // exit, if there are no certs
 
       const riskyCount = expiringCerts.reduce((acc, crt) => (crt.days_left <= 3 ? acc + 1 : acc), 0);

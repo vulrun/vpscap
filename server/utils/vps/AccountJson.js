@@ -1,16 +1,19 @@
 import fsPath from "node:path";
 import fs from "fs-extra";
+import locatePath from "@@/server/utils/locatePath";
 
 export default class AccountJson {
-  #filePath = fsPath.resolve(process?.env?.NUXT_LOCAL_DB_DIR || [process.cwd(), ".localdb/"], "account.json");
-
   constructor() {
     if (AccountJson.instance) {
       return AccountJson.instance;
     }
 
-    if (!fs.existsSync(this.#filePath)) {
-      fs.writeFileSync(this.#filePath, JSON.stringify({}, null, 2), "utf8");
+    const vpscapRootPath = locatePath.nearestDirPath(".git/config");
+    this.dirPath = fsPath.resolve(vpscapRootPath, ".localdb");
+    this.filePath = fsPath.resolve(vpscapRootPath, ".localdb", "account.json");
+
+    if (!fs.existsSync(this.filePath)) {
+      fs.writeFileSync(this.filePath, JSON.stringify({}, null, 2), "utf8");
     }
 
     AccountJson.instance = this;
@@ -18,7 +21,7 @@ export default class AccountJson {
 
   readJson() {
     try {
-      const data = fs.readFileSync(this.#filePath, "utf8");
+      const data = fs.readFileSync(this.filePath, "utf8");
       return JSON.parse(data);
     } catch (error) {
       return null;
@@ -26,7 +29,7 @@ export default class AccountJson {
   }
 
   writeJson(data) {
-    fs.writeFileSync(this.#filePath, JSON.stringify(data, null, 2), "utf8");
+    fs.writeFileSync(this.filePath, JSON.stringify(data, null, 2), "utf8");
   }
 
   // Accepts (key, value) or ({ key1: val1, key2: val2 })

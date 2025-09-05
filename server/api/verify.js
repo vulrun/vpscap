@@ -2,12 +2,9 @@ import fsPath from "node:path";
 import fs from "fs-extra";
 import crypto from "node:crypto";
 import packageJson from "@@/package.json";
-
-// import VpsCertBot from "@@/server/utils/vps/VpsCertbot";
-// import VpsCertMeta from "@@/server/utils/vps/VpsCertMeta";
-// import VpsWebsites from "@@/server/utils/vps/VpsWebsites";
-// import VpsAcmeSsl from "@@/server/utils/vps/VpsSslAcme";
 import AccountJson from "@@/server/utils/vps/AccountJson";
+// import VpsCertMeta from "@@/server/utils/vps/CertMeta";
+// import VpsWebsites from "@@/server/utils/vps/Websites";
 
 export default eventHandler(async (event) => {
   try {

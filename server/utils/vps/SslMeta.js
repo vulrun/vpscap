@@ -1,19 +1,21 @@
 // import fsPath from "node:path";
 // import fs from "fs-extra";
-// import fs from "node:fs/promises";
-// import fs from "node:fs";
-// import os from "node:os";
 import https from "node:https";
 import tls from "node:tls";
-import dns from "node:dns/promises";
 import lo from "lodash";
 
 export default class SslMeta {
   constructor() {
+    if (SslMeta.instance) {
+      return SslMeta.instance;
+    }
+
     this.db = localdb("certs-monitored");
     this.deletedDb = localdb("certs-monitored", "deletedData");
     this.cacheDb = localdb("certs-monitored-cache");
     this.cachedAtDb = localdb("certs-monitored-cache", "cachedAt");
+
+    SslMeta.instance = this;
   }
 
   async fetch(domain) {
@@ -210,7 +212,7 @@ export default class SslMeta {
       return itm;
     });
 
-    return validated;
+    return validated.sort((a, b) => a?.days_left - b?.days_left);
   }
 
   #daysLeft(validTo) {

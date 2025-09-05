@@ -1,15 +1,17 @@
 <script setup>
 const emits = defineEmits(["update:modelValue", "change"]);
-const { modelValue, ...attrs } = useAttrs();
+const props = defineProps(["modelValue"]);
+const attrs = useAttrs();
 
-const switchVal = ref(modelValue == true ? true : false);
-const onChange = (val) => {
-  switchVal.value = val;
-  emits("update:modelValue", switchVal.value);
-  emits("change", switchVal.value);
-};
+const switchVal = computed({
+  get: () => props?.modelValue == true,
+  set: (val) => {
+    emits("update:modelValue", val);
+    emits("change", val);
+  },
+});
 </script>
 
 <template>
-  <Switch v-bind="attrs" :checked="switchVal" @update:checked="onChange" />
+  <Switch v-bind="attrs" :checked="switchVal" @update:checked="(val) => (switchVal = val)" />
 </template>

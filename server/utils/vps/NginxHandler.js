@@ -1,25 +1,26 @@
 import fsPath from "node:path";
 import fs from "fs-extra";
-// import fs from "node:fs/promises";
-// import fs from "node:fs";
-// import os from "node:os";
-import dns from "node:dns/promises";
 import lo from "lodash";
 import { z } from "zod";
-import * as envs from "@@/server/utils/bin/env.js";
 import shell from "@@/server/utils/shell";
-import NginxParser from "@@/server/utils/NginxParser";
-
-const cleanArray = (...val) => [].concat(...val).filter(Boolean);
-const NUXT_LOCAL_DB_DIR = process?.env?.NUXT_LOCAL_DB_DIR || ".localdb/";
+import NginxParser from "@@/server/utils/vps/NginxParser";
 
 export default class NginxHandler {
-  #challengesPath = fsPath.resolve(NUXT_LOCAL_DB_DIR, "acme-ssl", "challenges");
+  #challengesPath;
   #allowedKeys = ["enableIndexing", "enableSSL", "forceSSL", "confType", "domain", "target"];
 
   constructor(args) {
+    if (NginxHandler.instance) {
+      return NginxHandler.instance;
+    }
+
+    const accountJson = new AccountJson();
+    this.#challengesPath = fsPath.resolve(accountJson.dirPath, "acme-ssl", "challenges");
+
     this.nginx = new NginxParser();
     this.webSites = args?.webSites;
+
+    NginxHandler.instance = this;
   }
 
   validateTarget({ enableIndexing, enableSSL, forceSSL, confType, domain, target }) {

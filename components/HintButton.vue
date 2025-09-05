@@ -1,5 +1,6 @@
 <script setup>
-const { title, ...attrs } = useAttrs();
+const props = defineProps(["title"]);
+const attrs = useAttrs();
 </script>
 
 <template>
@@ -10,7 +11,7 @@ const { title, ...attrs } = useAttrs();
           <slot />
         </Button>
       </TooltipTrigger>
-      <TooltipContent v-if="title">{{ title }}</TooltipContent>
+      <TooltipContent v-if="props?.title">{{ props?.title }}</TooltipContent>
     </Tooltip>
   </TooltipProvider>
 </template>

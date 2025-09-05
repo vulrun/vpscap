@@ -1,10 +1,10 @@
 <script setup>
-defineOptions({ inheritAttrs: false });
-const { class: classes, ...attrs } = useAttrs();
+const props = defineProps(["class"]);
+const attrs = useAttrs();
 </script>
 
 <template>
-  <label :class="cn('block m-0', classes)" v-bind="attrs">
+  <label v-bind="attrs" :class="cn('block m-0', props?.class)">
     <slot />
   </label>
 </template>
