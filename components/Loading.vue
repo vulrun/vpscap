@@ -1,16 +1,17 @@
 <script setup>
-const { class: classes, ...attrs } = useAttrs();
+const props = defineProps(["class", "size"]);
+const attrs = useAttrs();
 </script>
 
 <template>
-  <div v-bind="attrs" :class="cn('flex items-center', classes)">
+  <div v-bind="attrs" :class="cn('flex items-center', props?.class)">
     <svg
       xmlns="http://www.w3.org/2000/svg"
       xmlns:xlink="http://www.w3.org/1999/xlink"
       viewBox="0 0 100 100"
       preserveAspectRatio="xMidYMid"
-      :width="attrs?.size + 'px'"
-      :height="attrs?.size + 'px'"
+      :width="props?.size + 'px'"
+      :height="props?.size + 'px'"
       class="-m-5"
     >
       <g transform="rotate(0 50 50)">
