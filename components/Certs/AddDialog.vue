@@ -55,7 +55,7 @@ async function onSubmit() {
         </div>
         <DialogFooter class="flex">
           <RotatingText v-if="isSubmitting" :delay="2000" :values="['Please Wait...', 'Loading...']" class="font-medium text-green-700" />
-          <span v-else-if="errors.length > 0" class="font-medium text-red-600">{{ errors.join(" ") }}</span>
+          <span v-else-if="errors.length > 0" class="font-medium text-red-600" v-html="markdownToHtmlLite(errors.join(' '))" />
           <i class="mx-auto" />
           <DialogClose as-child>
             <Button type="button" variant="secondary" class="w-20">Close</Button>

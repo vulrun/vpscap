@@ -33,17 +33,17 @@ function setRefValues(obj) {
 function getColorClassByExitCode(code) {
   if (code === 0) return `text-green-700`;
   if (code === 1) return `text-red-700`;
-  if (code === 2) return `text-pink-600`;
+  if (code === 2) return `text-indigo-700`;
   if (code === 3) return `text-amber-700`;
 
   return `text-gray-800`;
 }
 
 function getMessageByExitCode(code) {
-  if (code === 0) return `Success, this reaches to your inbox.`;
+  if (code === 0) return `Success, reaches to your inbox.`;
   if (code === 1) return `Failed, unable to deliver your test email, try again.`;
-  if (code === 2) return `New changes detected, hit the above TEST EMAIL button.`;
-  if (code === 3) return `Never Executed, hit the above TEST EMAIL button.`;
+  if (code === 2) return `New changes detected, hit the above **__TEST EMAIL__** button.`;
+  if (code === 3) return `Never Executed, hit the above **__TEST EMAIL__** button.`;
 
   return `please wait...`;
 }
@@ -220,10 +220,10 @@ watch(
 
       <div v-if="typeof testStatus?.exit === 'number'" class="tracking-normal">
         Test Email Status:
-        <span :class="cn('font-semibold', getColorClassByExitCode(testStatus?.exit))">{{ [getMessageByExitCode(testStatus?.exit), testStatus?.note].join(" ") }}</span>
+        <span :class="cn('font-semibold', getColorClassByExitCode(testStatus?.exit))" v-html="markdownToHtmlLite([getMessageByExitCode(testStatus?.exit), testStatus?.note].join(' '))" />
       </div>
       <div v-if="isSubmitting" class="font-semibold text-sky-800">Please wait...</div>
-      <div v-else class="font-medium text-red-600">{{ errors.join(" ") }}</div>
+      <div v-else class="font-medium text-red-600" v-html="markdownToHtmlLite(errors.join(' '))" />
     </div>
   </div>
 </template>

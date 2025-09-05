@@ -103,7 +103,7 @@ async function onSubmit(formData) {
         <Button class="ml-2" variant="outline">Add</Button>
       </slot>
     </DialogTrigger>
-    <DialogContent class="max-w-[95svw] max-h-[95svh] md:max-w-lg grid-rows-[auto_minmax(0,1fr)_auto]"  @interact-outside="(event) => event.preventDefault()">
+    <DialogContent class="max-w-[95svw] max-h-[95svh] md:max-w-lg grid-rows-[auto_minmax(0,1fr)_auto]" @interact-outside="(event) => event.preventDefault()">
       <DialogHeader>
         <DialogTitle class="font-semibold text-lg">Add Site</DialogTitle>
         <DialogDescription class="hidden">Description goes here</DialogDescription>
@@ -112,7 +112,7 @@ async function onSubmit(formData) {
         <DialogFooter class="flex flex-row items-center gap-2">
           <div class="flex-1">
             <RotatingText v-if="isSubmitting" :delay="2000" class="font-medium lowercase text-sm text-green-700" />
-            <span v-else-if="errors.length > 0" class="font-medium text-sm text-red-600 text-justify" v-html="markdownToHtmlLite(errors.join(' '))"></span>
+            <span v-else-if="errors.length > 0" class="font-medium text-sm text-red-600 text-justify" v-html="markdownToHtmlLite(errors.join(' '))" />
           </div>
           <DialogClose as-child>
             <Button type="button" variant="secondary" class="w-20 border border-gray-300">Close</Button>

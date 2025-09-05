@@ -144,6 +144,6 @@ const cronJobList = [
     </div>
 
     <div v-if="isSubmitting" class="font-semibold text-sky-800">Please wait...</div>
-    <div v-else class="font-medium text-red-600">{{ errors.join(" ") }}</div>
+    <div v-else class="font-medium text-red-600" v-html="markdownToHtmlLite(errors.join(' '))" />
   </div>
 </template>

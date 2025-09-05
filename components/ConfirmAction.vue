@@ -41,7 +41,7 @@ async function onSubmit() {
       />
       <DialogFooter class="flex gap-2 pt-4">
         <RotatingText v-if="isSubmitting" :delay="2000" class="text-sm font-medium text-green-700" />
-        <span v-else-if="errors.length > 0" class="text-sm font-medium text-red-600">{{ errors.join(" ") }}</span>
+        <span v-else-if="errors.length > 0" class="text-sm font-medium text-red-600" v-html="markdownToHtmlLite(errors.join(' '))" />
         <i class="mx-auto"></i>
 
         <Button type="button" variant="secondary" class="border border-gray-300" @click.prevent="dialogOpen = false">Cancel</Button>
