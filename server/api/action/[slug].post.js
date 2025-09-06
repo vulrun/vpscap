@@ -2,89 +2,89 @@ import VpsCertMeta from "@@/server/utils/vps/SslMeta";
 import VpsWebsites from "@@/server/utils/vps/WebSites";
 import AccountJson from "@@/server/utils/vps/AccountJson";
 
-const site = new VpsWebsites();
-const sslm = new VpsCertMeta();
-const ajson = new AccountJson();
+const vpsSite = new VpsWebsites();
+const vpsMeta = new VpsCertMeta();
+const accJson = new AccountJson();
 
 const controllers = {
   // monitored certs handlers
   async insertMonitoredCert({ body }) {
-    await sslm.insert(body?.domains);
+    await vpsMeta.insert(body?.domains);
     return "Added successfully";
   },
   async deleteMonitoredCert({ body }) {
-    await sslm.delete(body?.domains);
+    await vpsMeta.delete(body?.domains);
     return "Deleted successfully";
   },
   async refreshMonitoredCert({ body }) {
-    await sslm.hardRefresh(body?.domains);
+    await vpsMeta.hardRefresh(body?.domains);
     return "Refreshed";
   },
   async purgeMonitoredCertsCache() {
-    await sslm.purgeCacheAll();
-    await sslm.fetchAll();
+    await vpsMeta.purgeCacheAll();
+    await vpsMeta.fetchAll();
     return "Cache Purged";
   },
 
   // installed certs handlers
   async createInstalledCert({ body }) {
-    await site.installCert(body?.domains);
+    await vpsSite.installCert(body?.domains);
     return "Created successfully";
   },
   async deleteInstalledCert({ body }) {
-    await site.deleteCert(body?.domains);
+    await vpsSite.deleteCert(body?.domains);
     return "Deleted successfully";
   },
   async renewInstalledCert({ body }) {
-    await site.renewCert(body?.domains);
+    await vpsSite.renewCert(body?.domains);
     return "Renew successfully";
   },
 
   // web sites handlers
   async createSite({ body }) {
-    await site.create(body);
+    await vpsSite.create(body);
     return "Site Added Successfully";
   },
   async updateSite({ body }) {
     if (!body?.id) throw new Error("Conf ID is missing");
-    await site.update(body?.id, body);
+    await vpsSite.update(body?.id, body);
     return "Site Configuration Updated";
   },
   async deleteSite({ body }) {
     if (!body?.id) throw new Error("Conf ID is missing");
-    await site.delete(body?.id);
+    await vpsSite.delete(body?.id);
     return "Site moved to bin successfully";
   },
   async enableSite({ body }) {
     if (!body?.id) throw new Error("Conf ID is missing");
-    await site.enable(body?.id);
+    await vpsSite.enable(body?.id);
     return "Site Enabled Successfully";
   },
   async disableSite({ body }) {
     if (!body?.id) throw new Error("Conf ID is missing");
-    await site.disable(body?.id);
+    await vpsSite.disable(body?.id);
     return "Site Disabled Successfully";
   },
   async rebuildSite({ body }) {
     if (!body?.id) throw new Error("Conf ID is missing");
-    await site.rebuild(body?.id);
+    await vpsSite.rebuild(body?.id);
     return "Site Configuration Rebuilt";
   },
   async rebuildAllSites() {
-    await site.rebuildAll();
+    await vpsSite.rebuildAll();
     return "All Nginx Configuration Rebuilt";
   },
 
   async setAccountData(req) {
     try {
-      return ajson.setData(req?.body);
+      return accJson.setData(req?.body);
     } catch (err) {
       return null;
     }
   },
 
   async sendSmtpTestEmail(req) {
-    const { username, vpsUser } = ajson.getData(["username", "vpsUser"]);
+    const { username, vpsUser } = accJson.getData(["username", "vpsUser"]);
     const sentInfo = await sendEmailNow({
       to: username,
       subject: "SMTP Test Email",
@@ -95,7 +95,7 @@ const controllers = {
       exit: sentInfo?.success ? 0 : 1,
       note: sentInfo?.remarks,
     };
-    return ajson.setData({ smtpTestStatus });
+    return accJson.setData({ smtpTestStatus });
   },
 
   async triggerCronJob(req) {

@@ -14,19 +14,19 @@ import AccountJson from "@@/server/utils/vps/AccountJson";
 const ipv6Regex = /([0-9a-fA-F]{1,4}:){1,7}[0-9a-fA-F]{1,4}/;
 const cleanUniqArray = (...args) => lo.uniq(cleanArray(...args));
 
-const sslio = new VpsCertMeta();
-const sites = new VpsWebsites();
-const accountJson = new AccountJson();
+const vpsMeta = new VpsCertMeta();
+const vpsSite = new VpsWebsites();
+const accJson = new AccountJson();
 
 const controllers = {
   async sslStats() {
-    const cmeta = await sslio.list();
-    const cinst = await sites.findAllCert();
+    const cmeta = await vpsMeta.list();
+    const cinst = await vpsSite.findAllCert();
 
     return `${cmeta?.length} monitored, ${cinst?.length} installed certificates`;
   },
   async webStats() {
-    const siteList = await sites.list();
+    const siteList = await vpsSite.list();
     const actives = siteList.reduce((acc, itm) => (acc += itm?.isActive ? 1 : 0), 0);
     const disabled = siteList.reduce((acc, itm) => (acc += !itm?.isActive ? 1 : 0), 0);
     return `${actives} active, ${disabled} disabled configurations`;
@@ -45,7 +45,7 @@ const controllers = {
     ]);
 
     const protocol = getRequestProtocol(event);
-    accountJson.setData({
+    accJson.setData({
       homeUrl: `${protocol}://${headers?.host}`,
       hostName: os.hostname(),
     });
@@ -97,17 +97,17 @@ const controllers = {
   },
   async monitoredCerts() {
     return {
-      cachedAt: await sslio.getCachedAt(),
-      certList: await sslio.fetchAllCached(),
+      cachedAt: await vpsMeta.getCachedAt(),
+      certList: await vpsMeta.fetchAllCached(),
     };
   },
   async installedCerts() {
     return {
-      certList: await sites.findAllCert(),
+      certList: await vpsSite.findAllCert(),
     };
   },
   availableSites() {
-    return sites.list();
+    return vpsSite.list();
   },
   availableActions() {
     return null;
@@ -116,7 +116,7 @@ const controllers = {
   async getAccountData(req) {
     if (!req?.query?.fields) return null;
 
-    return accountJson.getData(req?.query?.fields.split(","));
+    return accJson.getData(req?.query?.fields.split(","));
   },
 };
 

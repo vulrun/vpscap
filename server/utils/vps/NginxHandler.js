@@ -14,8 +14,8 @@ export default class NginxHandler {
       return NginxHandler.instance;
     }
 
-    const accountJson = new AccountJson();
-    this.#challengesPath = fsPath.resolve(accountJson.dirPath, "acme-ssl", "challenges");
+    const accJson = new AccountJson();
+    this.#challengesPath = fsPath.resolve(accJson.dirPath, "acme-ssl", "challenges");
 
     this.nginx = new NginxParser();
     this.webSites = args?.webSites;

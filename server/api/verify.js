@@ -3,14 +3,14 @@ import fs from "fs-extra";
 import crypto from "node:crypto";
 import packageJson from "@@/package.json";
 import AccountJson from "@@/server/utils/vps/AccountJson";
-// import VpsCertMeta from "@@/server/utils/vps/CertMeta";
+// import VpsCertMeta from "@@/server/utils/vps/SslMeta";
 // import VpsWebsites from "@@/server/utils/vps/Websites";
 
 export default eventHandler(async (event) => {
   try {
-    const accountJson = new AccountJson();
-    const accountObj = accountJson.getData("*");
-    if (!accountObj.vpsUser) throw new Error("Please setup admin user first");
+    const accJson = new AccountJson();
+    const accObj = accJson.getData("*");
+    if (!accObj.vpsUser) throw new Error("Please setup admin user first");
 
     const deps = {};
     deps.install_nginx = await isInstalled("nginx");
@@ -26,10 +26,10 @@ export default eventHandler(async (event) => {
     resp.appEnv = runtimeConfig?.appEnv;
     resp.version = packageJson?.version;
     resp.profile = {
-      name: accountObj?.vpsUser,
-      email: accountObj?.username,
-      avatar: getGravatarUrl(accountObj?.username),
-      homeUrl: accountObj?.homeUrl,
+      name: accObj?.vpsUser,
+      email: accObj?.username,
+      avatar: getGravatarUrl(accObj?.username),
+      homeUrl: accObj?.homeUrl,
     };
     resp.prerequisite = deps;
 

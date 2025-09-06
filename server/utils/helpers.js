@@ -164,8 +164,8 @@ export async function runCronJobTask(jobSlug, runForcefully) {
   const vpsMeta = new VpsCertMeta();
   const vpsSite = new VpsWebSites();
 
-  const accountObj = accJson.getData("*");
-  if (!runForcefully && !accountObj?.cronJobSettings?.[jobSlug]) {
+  const accObj = accJson.getData("*");
+  if (!runForcefully && !accObj?.cronJobSettings?.[jobSlug]) {
     console.log("Skipping CronJobTask as per settings.");
     return;
   }
@@ -199,10 +199,10 @@ export async function runCronJobTask(jobSlug, runForcefully) {
 
       const subject = `[Action Required] SSL Certificates expiring soon` + (!riskyCount ? "" : ` (${riskyCount})`);
       const heading = `SSL Certificate Expiry Alert`;
-      const serverName = `${accountObj.vpsUser}@${accountObj.hostName}`;
+      const serverName = `${accObj.vpsUser}@${accObj.hostName}`;
       const generatedAt = new Date().toISOString().split(".")[0].replace("T", " ");
-      const dashboardUrl = `${accountObj?.homeUrl}/#settings`;
-      const unsubscribeUrl = `${accountObj?.homeUrl}/#settings/notifications`;
+      const dashboardUrl = `${accObj?.homeUrl}/#settings`;
+      const unsubscribeUrl = `${accObj?.homeUrl}/#settings/notifications`;
 
       const certs = expiringCerts.map((crt) => ({
         notes: crt?.domains.filter((c) => c !== crt?.domain).join(", "),
@@ -225,7 +225,7 @@ export async function runCronJobTask(jobSlug, runForcefully) {
       });
 
       const sentInfo = await sendEmailNow({
-        to: accountObj?.username,
+        to: accObj?.username,
         subject,
         body: html,
       });
@@ -242,10 +242,10 @@ export async function runCronJobTask(jobSlug, runForcefully) {
 
       const subject = `[Action Required] Monitored Certificates expiring soon` + (!riskyCount ? "" : ` (${riskyCount})`);
       const heading = `Monitored Certificate Expiry Alert`;
-      const serverName = `${accountObj.vpsUser}@${accountObj.hostName}`;
+      const serverName = `${accObj.vpsUser}@${accObj.hostName}`;
       const generatedAt = new Date().toISOString().split(".")[0].replace("T", " ");
-      const dashboardUrl = `${accountObj?.homeUrl}/#settings`;
-      const unsubscribeUrl = `${accountObj?.homeUrl}/#settings/notifications`;
+      const dashboardUrl = `${accObj?.homeUrl}/#settings`;
+      const unsubscribeUrl = `${accObj?.homeUrl}/#settings/notifications`;
 
       const certs = expiringCerts.map((crt) => ({
         notes: crt?.subject_alt_name.filter((c) => c !== crt?.domain).join(", "),
@@ -268,7 +268,7 @@ export async function runCronJobTask(jobSlug, runForcefully) {
       });
 
       const sentInfo = await sendEmailNow({
-        to: accountObj?.username,
+        to: accObj?.username,
         subject,
         body: html,
       });

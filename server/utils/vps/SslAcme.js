@@ -22,15 +22,15 @@ export default class SslAcme {
       return SslAcme.instance;
     }
 
-    const accountJson = new AccountJson();
-    this.#certsRootPath = fsPath.resolve(accountJson.dirPath, "acme-ssl");
-    this.#certsLivePath = fsPath.resolve(accountJson.dirPath, "acme-ssl", "certs");
-    this.#certsTrashPath = fsPath.resolve(accountJson.dirPath, "acme-ssl", "trashed-certs");
-    this.#challengesPath = fsPath.resolve(accountJson.dirPath, "acme-ssl", "challenges");
-    this.#accountKeyPath = fsPath.resolve(accountJson.dirPath, "acme-ssl", "account-key.pem");
-    this.#accountObjPath = fsPath.resolve(accountJson.dirPath, "acme-ssl", "account-acme.json");
-    this.#sslDhParamsPath = fsPath.resolve(accountJson.dirPath, "acme-ssl", "ssl-dhparams.pem");
-    this.#sslOptionsNginx = fsPath.resolve(accountJson.dirPath, "acme-ssl", "options-ssl-nginx.conf");
+    const accJson = new AccountJson();
+    this.#certsRootPath = fsPath.resolve(accJson.dirPath, "acme-ssl");
+    this.#certsLivePath = fsPath.resolve(accJson.dirPath, "acme-ssl", "certs");
+    this.#certsTrashPath = fsPath.resolve(accJson.dirPath, "acme-ssl", "trashed-certs");
+    this.#challengesPath = fsPath.resolve(accJson.dirPath, "acme-ssl", "challenges");
+    this.#accountKeyPath = fsPath.resolve(accJson.dirPath, "acme-ssl", "account-key.pem");
+    this.#accountObjPath = fsPath.resolve(accJson.dirPath, "acme-ssl", "account-acme.json");
+    this.#sslDhParamsPath = fsPath.resolve(accJson.dirPath, "acme-ssl", "ssl-dhparams.pem");
+    this.#sslOptionsNginx = fsPath.resolve(accJson.dirPath, "acme-ssl", "options-ssl-nginx.conf");
 
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(args?.email)) throw new Error("Invalid Email Provided");
