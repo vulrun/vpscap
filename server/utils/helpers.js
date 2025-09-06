@@ -1,7 +1,8 @@
 import fsPath from "node:path";
 import fs from "fs-extra";
 import axios from "axios";
-import { minify } from "html-minifier";
+import { minify } from "html-minifier-terser";
+
 import nodemailer from "nodemailer";
 import Handlebars from "handlebars";
 import JsonDbExtended from "./JsonDbExtended";
@@ -151,9 +152,16 @@ export async function getAlertsHtml(context) {
   const templateHtml = Handlebars.compile(templateRaw)(context || {});
 
   return minify(templateHtml, {
-    minifyCSS: true,
-    removeComments: true,
     collapseWhitespace: true,
+    conservativeCollapse: true,
+    removeComments: true,
+    removeRedundantAttributes: true,
+    removeEmptyAttributes: true,
+    minifyCSS: true, // Inline CSS gets minified
+    minifyJS: true, // Inline JS gets minified (if any, rare in emails)
+    useShortDoctype: true,
+    keepClosingSlash: true, // Important for self-closing tags in XHTML
+    removeAttributeQuotes: false, // Keep quotes for better email client compatibility
   });
 }
 
