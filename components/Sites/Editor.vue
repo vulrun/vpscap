@@ -111,7 +111,7 @@ async function onSubmit(formData) {
       <AutoForm class="space-y-4" :schema="SiteConfSchema" :field-config="fieldConfig" :dependencies="dependencies" :form="form" @submit="onSubmit">
         <DialogFooter class="flex flex-row items-center gap-2">
           <div class="flex-1">
-            <RotatingText v-if="isSubmitting" :delay="2000" class="font-medium lowercase text-sm text-green-700" />
+            <RotatingText v-if="isSubmitting" :delay="4000" class="font-medium lowercase text-sm text-green-700" />
             <span v-else-if="errors.length > 0" class="font-medium text-sm text-red-600 text-justify" v-html="markdownToHtmlLite(errors.join(' '))" />
           </div>
           <DialogClose as-child>

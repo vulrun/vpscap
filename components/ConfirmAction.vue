@@ -40,7 +40,7 @@ async function onSubmit() {
         v-html="props?.description || 'Warning: These changes are permanent. Once you hit <b>Continue</b>, there\'s no undo button. Think twice before you act!'"
       />
       <DialogFooter class="flex gap-2 pt-4">
-        <RotatingText v-if="isSubmitting" :delay="2000" class="text-sm font-medium text-green-700" />
+        <RotatingText v-if="isSubmitting" :delay="4000" class="text-sm font-medium text-green-700" />
         <span v-else-if="errors.length > 0" class="text-sm font-medium text-red-600" v-html="markdownToHtmlLite(errors.join(' '))" />
         <i class="mx-auto"></i>
 

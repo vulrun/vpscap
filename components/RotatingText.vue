@@ -2,6 +2,7 @@
 import { cn } from "@/utils/utils";
 
 const props = defineProps(["class", "delay", "values"]);
+const propValues = props?.values || [];
 const values = ref([]);
 const currentIndex = ref(0);
 const intervalDelay = ref(props?.delay || 400);
@@ -9,8 +10,8 @@ const updateInterval = ref(null);
 
 // Clean up the interval when the component is unmounted
 onMounted(() => {
-  values.value = props?.values
-    ? [].concat(props?.values)
+  values.value = propValues
+    ? [].concat(propValues)
     : [
         "Please Wait...",
         "Loading...",
@@ -29,10 +30,10 @@ onMounted(() => {
   updateInterval.value = setInterval(() => {
     currentIndex.value = Math.abs((currentIndex.value + 1) % values.value.length);
   }, intervalDelay.value);
+});
 
-  onUnmounted(() => {
-    clearInterval(updateInterval.value);
-  });
+onUnmounted(() => {
+  clearInterval(updateInterval.value);
 });
 </script>
 
