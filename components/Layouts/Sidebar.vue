@@ -17,6 +17,7 @@ import {
 } from "lucide-vue-next";
 
 const props = defineProps(["class", "styles", "fixed_classes"]);
+const appData = ref({});
 const { title, icon } = useAppConfig();
 const config = useRuntimeConfig();
 const route = useRoute();
@@ -66,6 +67,10 @@ function doLogout() {
   $persist("WebAppToken", null);
   return navigateTo("/");
 }
+
+onMounted(() => {
+  appData.value = $persist("WebAppData");
+});
 </script>
 
 <template>
@@ -88,7 +93,7 @@ function doLogout() {
       </nav>
     </div>
 
-    <div :class="cn('w-full fixed bottom-0 left-0 right-0 p-2 bg-gray-800', props?.fixed_classes)">
+    <div :class="cn('w-full fixed bottom-0 left-0 right-0 p-2 pb-0 bg-gray-800', props?.fixed_classes)">
       <div class="z-50 min-w-56 overflow-hidden rounded-sm border-0 bg-gray-700 p-1 text-white shadow-inner">
         <div class="flex items-center px-1 py-1.5 text-left text-sm font-normal">
           <LayoutsAvatarDiv />
@@ -126,14 +131,17 @@ function doLogout() {
           Log out
         </div>
       </div>
-      <a
-        href="https://github.com/vulrun/vpscap"
-        target="_blank"
-        class="cursor-pointer relative flex select-none items-center rounded-sm gap-2 mt-1 -mb-1 px-2 py-1 h-8 text-sm outline-none transition-colors text-gray-500 hover:text-gray-400 [&>svg]:size-4 [&>svg]:shrink-0"
-      >
-        <GithubIcon />
-        Github
-      </a>
+      <div class="relative flex items-center rounded-sm gap-2 py-1">
+        <a
+          href="https://github.com/vulrun/vpscap"
+          target="_blank"
+          class="cursor-pointer flex select-none items-center mr-auto gap-2 p-1 h-8 text-sm outline-none transition-colors text-gray-500 hover:text-gray-400 [&>svg]:size-4 [&>svg]:shrink-0"
+        >
+          <GithubIcon />
+          Github
+        </a>
+        <span class="px-1 select-none text-xs text-gray-600">Ver: {{ appData.version }}</span>
+      </div>
 
       <!-- <DropdownMenu>
         <DropdownMenuTrigger class="w-full hstack p-2 gap-2 rounded-md shadow transition-all text-gray-200 bg-gray-50/10 hover:bg-gray-50/20 data-[state=open]:bg-gray-50/20">

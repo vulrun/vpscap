@@ -1,12 +1,12 @@
 const bcrypt = require("bcryptjs");
 const BCRYPT_HASH_ROUNDS = 10;
-const { setEnvDataSync } = require("./env.js");
 
 const hashPassword = (password) => bcrypt.hashSync(password, BCRYPT_HASH_ROUNDS);
 const comparePassword = (password, hash) => bcrypt.compareSync(password, hash);
 
 module.exports = {
   hashPassword,
+  comparePassword,
   verifyUser,
 };
 

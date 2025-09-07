@@ -1,15 +1,8 @@
-import { setEnvDataSync } from "./env.js";
-import { hashPassword, comparePassword } from "./bcrypt.js";
+import bcrypt from "bcryptjs";
+const BCRYPT_HASH_ROUNDS = 10;
 
-export const createAdminUser = (username, password) => {
-  const adminUser = {
-    NUXT_LOGIN_USERNAME: username,
-    NUXT_LOGIN_PASSWORD: hashPassword(password),
-  };
-
-  setEnvDataSync(adminUser);
-  return adminUser;
-};
+export const hashPassword = (password) => bcrypt.hashSync(password, BCRYPT_HASH_ROUNDS);
+export const comparePassword = (password, hash) => bcrypt.compareSync(password, hash);
 
 export const validateAdminUser = (inps, envs) => {
   if (inps?.username !== envs?.username) throw new Error("User is invalid");

@@ -1,4 +1,8 @@
-const net = require("net");
+const net = require("node:net");
+const fsPath = require("node:path");
+const fs = require("fs-extra");
+const env = require("../utils/env.js");
+const locatePath = require("../utils/locatePath.js");
 
 const LOG_COLORS = {
   RESET: "\x1b[0m",
@@ -40,6 +44,8 @@ module.exports = {
   trimStr,
   isValidPort,
   isPortAvailable,
+  lookupAccountJs,
+  pushCoreLogs,
 };
 
 function extendObj(target, ...sources) {
@@ -123,4 +129,50 @@ function isPortAvailable(port, host = "127.0.0.1") {
       })
       .listen(port, host);
   });
+}
+
+function lookupAccountJs() {
+  const vpscapRootPath = locatePath.nearestDirPath(".git/config");
+  const vpscapLocalPath = fsPath.resolve(vpscapRootPath, ".localdb");
+  const accountFilePath = fsPath.resolve(vpscapRootPath, ".localdb", "account.json");
+  let accountObj = fs.readJsonSync(accountFilePath, { throws: false });
+  let currEnvObj = env.getData(vpscapRootPath);
+
+  // fix-dotenv
+  extendObj(currEnvObj, {
+    NITRO_PORT: accountObj?.port,
+    APP_ENV: accountObj?.appEnv,
+    NUXT_PUBLIC_APP_ENV: accountObj?.appEnv,
+  });
+  // fix-account-json-dir-paths
+  extendObj(accountObj, {
+    rootPath: vpscapRootPath,
+    localDir: vpscapLocalPath,
+    filePath: accountFilePath,
+  });
+
+  env.setData(currEnvObj, vpscapRootPath);
+  fs.writeJsonSync(accountFilePath, accountObj, { spaces: "  " });
+
+  // read-account-json
+  accountObj = fs.readJsonSync(accountFilePath, { throws: false });
+  if (!accountObj?.vpsUser) throw new Error("Account configuration are missing, please setup admin user first");
+  if (!accountObj?.password) throw new Error("Account configuration are missing, please setup admin user first");
+
+  return {
+    accountObj,
+    vpscapRootPath,
+    vpscapLocalPath,
+    accountFilePath,
+  };
+}
+
+function pushCoreLogs(msg) {
+  if (!msg) return;
+
+  const { vpscapLocalPath } = lookupAccountJs();
+  const appCoreLogFilePath = fsPath.resolve(vpscapLocalPath, "logs", "app-core.log");
+  const timestamp = new Date().toISOString().replace("T", " ").split(".")[0];
+
+  return require("node:fs").appendFileSync(appCoreLogFilePath, `[${timestamp}] ${msg}\n`);
 }

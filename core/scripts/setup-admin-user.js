@@ -13,7 +13,7 @@ const {
   LOG_COLORS,
   styledText,
   isValidPort,
-  isPortAvailable,
+  pushCoreLogs,
 } = require("../utils/functions.js");
 
 const VPSCAP_SEND_CODE_API_URL = "___VPSCAP_SEND_CODE_API_URL___";
@@ -27,21 +27,18 @@ const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 let tempOtpMem;
 
 (async () => {
-  // try {
-  await setupAdminUser();
-  // } catch (err) {
-  // console.log("ERROR:", err?.message);
-  // }
+  try {
+    await setupAdminUser();
+  } catch (err) {
+    console.error("❌ Error, setting up admin-user:", err?.message);
+  }
 })();
 
 async function setupAdminUser() {
-  if (!VPSCAP_SEND_CODE_API_URL) throw new Error("Unable to start admin setup, missing api url");
-  if (!VPSCAP_SEND_CODE_API_KEY) throw new Error("Unable to start admin setup, missing api key");
+  if (!VPSCAP_SEND_CODE_API_URL) throw new Error("missing api url");
+  if (!VPSCAP_SEND_CODE_API_KEY) throw new Error("missing api key");
 
-  const vpscapRootPath = await locatePath.nearestDirPath(".git/config");
-  // setup logging
-  const mainLogFilePath = fsPath.resolve(vpscapRootPath, "app-core.log");
-  const pushCoreLogs = (msg) => msg && require("fs").appendFileSync(mainLogFilePath, `${new Date().toISOString()} - ${msg}\n`);
+  const vpscapRootPath = locatePath.nearestDirPath(".git/config");
 
   // setup package-json
   const mainPackagePath = fsPath.resolve(vpscapRootPath, "package.json");
@@ -52,8 +49,8 @@ async function setupAdminUser() {
   const accountFilePath = fsPath.resolve(vpscapRootPath, ".localdb", "account.json");
 
   // touching dir and files
-  await fs.ensureDir(vpscapLocalPath);
-  await fs.ensureFile(accountFilePath);
+  fs.ensureDirSync(vpscapLocalPath);
+  fs.ensureFileSync(accountFilePath);
 
   // setup usernames
   const currentUserName = os.userInfo().username;
@@ -110,7 +107,7 @@ async function setupAdminUser() {
     type: "text",
     name: "username",
     message: "Login Email",
-    validate: async (value) => {
+    validate: (value) => {
       value = trimStr(value);
       if (!value) return "Login email is required";
       if (!EMAIL_REGEX.test(value)) {
@@ -163,14 +160,17 @@ async function setupAdminUser() {
   });
 
   const onCancel = () => {
-    console.log("❌ Operation canceled: No changes were made. Bye Bye!");
-    process.exit();
+    console.log("❌ Operation canceled: No changes have been made. Bye Bye!");
+    return process.exit();
   };
   const response = await prompts(promptQuestions, { onCancel });
-  if (!response?.agreed) return console.log("❌ Action aborted: No changes have been made. Have a good day!");
+  if (!response?.agreed) {
+    console.log("❌ Action aborted: No changes have been made. Have a good day!");
+    return process.exit();
+  }
 
   // setup account.json
-  const accountObj = {};
+  const accountObj = fs.readJsonSync(mainPackagePath, { throws: false }) || {};
   extendObj(accountObj, {
     port: response?.port,
     appEnv: "production",
@@ -185,17 +185,22 @@ async function setupAdminUser() {
 
   // setup .env variables
   const currentEnvObject = extendObj({
-    APP_ENV: accountObj?.appEnv,
     NITRO_PORT: accountObj?.port,
-    NUXT_LOCAL_DB_DIR: accountObj?.localDir,
-    NUXT_LOGIN_USERNAME: accountObj?.username,
-    NUXT_LOGIN_PASSWORD: accountObj?.password,
+    APP_ENV: accountObj?.appEnv,
+    NUXT_PUBLIC_APP_ENV: accountObj?.appEnv,
   });
 
-  await env.setData(currentEnvObject, vpscapRootPath);
-  await fs.writeJson(accountFilePath, accountObj, { spaces: "  " });
+  env.setData(currentEnvObject, vpscapRootPath);
+  fs.writeJsonSync(accountFilePath, accountObj, { spaces: "  " });
 
-  console.log("\n", "\n", styledText(`🎉 Admin User is created successfully, please keeps your credentials safe.`, [LOG_COLORS.BOLD, LOG_COLORS.BLUE]), "\n", "\n");
+  console.log(
+    //
+    "\n",
+    "\n",
+    styledText(`🎉 Admin User is created successfully, please keeps your credentials safe.`, [LOG_COLORS.BOLD, LOG_COLORS.BLUE]),
+    "\n",
+    "\n"
+  );
 
   process.exit();
 }

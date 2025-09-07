@@ -1,4 +1,7 @@
 import { validateAdminUser } from "@@/server/utils/bin/admin";
+import AccountJson from "@@/server/utils/vps/AccountJson";
+
+const accJson = new AccountJson();
 
 export default eventHandler((event) => {
   if (import.meta.client) return;
@@ -10,8 +13,8 @@ export default eventHandler((event) => {
     const token = getHeader(event, "Authorization")?.replace("Bearer ", "");
     if (!token) return event.errorResponse(new Error("Token is missing"), 401);
 
-    const { loginUsername, loginPassword } = useRuntimeConfig(event);
-    const isValidToken = validateAdminUser(decodeUserPass(token), { username: loginUsername, password: loginPassword });
+    const { username, password } = accJson.getData(["username", "password"]);
+    const isValidToken = validateAdminUser(decodeUserPass(token), { username, password });
 
     if (event.path.startsWith("/api/") && !event.path.startsWith("/api/_") && !isValidToken) {
       return event.errorResponse(new Error("Unauthorized"), 401);

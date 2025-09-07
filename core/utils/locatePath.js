@@ -33,7 +33,7 @@ const defaultFindOptions = {
  * @returns a promise that resolves to the path of the file found.
  * @throws Will throw an error if the file cannot be found.
  */
-const locateFile = async (_filename, _options = {}) => {
+const locateFile = (_filename, _options = {}) => {
   const filenames = Array.isArray(_filename) ? _filename : [_filename];
   if (!filenames.length) return null;
   const options = { ...defaultFindOptions, ..._options };
@@ -42,7 +42,7 @@ const locateFile = async (_filename, _options = {}) => {
   const hasLeadingSlash = basePath[0] === "/";
 
   // Test input itself first
-  if (filenames.includes(segments.at(-1)) && (await options.validate(basePath))) {
+  if (filenames.includes(segments.at(-1)) && options.validate(basePath)) {
     return basePath;
   }
 
@@ -65,7 +65,7 @@ const locateFile = async (_filename, _options = {}) => {
     for (const filename of filenames) {
       const dirPath = fsPath.join(...segments.slice(0, index));
       const filePath = fsPath.join(dirPath, filename);
-      if (await options.validate(filePath)) {
+      if (options.validate(filePath)) {
         return options?.returns === "dirPath" ? dirPath : filePath;
       }
     }

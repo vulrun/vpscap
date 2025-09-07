@@ -1,48 +1,20 @@
 const fsPath = require("node:path");
 const fs = require("fs-extra");
-const os = require("node:os");
-const env = require("../utils/env.js");
 const locatePath = require("../utils/locatePath.js");
 const NginxParser = require("../utils/NginxParser.js");
-const { extendObj } = require("../utils/functions.js");
+const { extendObj, lookupAccountJs } = require("../utils/functions.js");
+
 const CONF_VPSCAP_NOTE = "\n###_MODIFIED_BY_VPSCAP_###\n\n";
 
 (async () => {
   try {
-    const vpscapRootPath = await locatePath.nearestDirPath(".git/config");
-
-    await fixAccountJs({ vpscapRootPath });
-    const accountObj = await getAccountJs({ vpscapRootPath });
+    const { vpscapRootPath, accountObj } = lookupAccountJs();
     await updateNginxConf({ vpscapRootPath, accountObj });
     await someMoreTweaks();
   } catch (err) {
-    console.error("❌ Error, setting vps configuration ~", err?.message);
+    console.error("❌ Error, setting vps configuration:", err?.message);
   }
 })();
-
-async function fixAccountJs({ vpscapRootPath }) {
-  const vpscapLocalPath = fsPath.resolve(vpscapRootPath, ".localdb");
-  const accountFilePath = fsPath.resolve(vpscapRootPath, ".localdb", "account.json");
-
-  const accountObj = await fs.readJson(accountFilePath, { throws: false });
-  const currEnvObj = await env.getData(vpscapRootPath);
-  if (!accountObj?.password) throw new Error("Account configuration are missing, please setup admin user first");
-  if (!currEnvObj?.NUXT_LOGIN_PASSWORD) throw new Error("ENV variables are missing, please setup admin user first");
-
-  extendObj(accountObj, { rootPath: vpscapRootPath, localDir: vpscapLocalPath, filePath: accountFilePath });
-  extendObj(currEnvObj, { NUXT_LOCAL_DB_DIR: vpscapLocalPath });
-
-  await fs.writeJson(accountFilePath, accountObj, { spaces: "  " });
-  await env.setData(currEnvObj, vpscapRootPath);
-}
-
-async function getAccountJs({ vpscapRootPath }) {
-  const accountFilePath = fsPath.resolve(vpscapRootPath, ".localdb", "account.json");
-  const accountObj = await fs.readJson(accountFilePath, { throws: false });
-  if (!accountObj?.vpsUser) throw new Error("Account configuration are missing, please setup admin user first");
-
-  return accountObj;
-}
 
 async function updateNginxConf({ accountObj }) {
   console.log("👉 Modifying nginx configuration...");
