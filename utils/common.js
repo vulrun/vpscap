@@ -131,7 +131,7 @@ export function encodeUserPass(user, pass) {
   if (!user) throw new Error("User is needed");
   if (!pass) throw new Error("Pass is needed");
 
-  return hexEncode(JSON.stringify({ username: user, password: pass }));
+  return hexEncode(JSON.stringify({ user, pass }));
 }
 
 export function decodeUserPass(str) {

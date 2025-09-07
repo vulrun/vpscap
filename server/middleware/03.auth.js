@@ -13,8 +13,9 @@ export default eventHandler((event) => {
     const token = getHeader(event, "Authorization")?.replace("Bearer ", "");
     if (!token) return event.errorResponse(new Error("Token is missing"), 401);
 
-    const { username, password } = accJson.getData(["username", "password"]);
-    const isValidToken = validateAdminUser(decodeUserPass(token), { username, password });
+    const inputCreds = decodeUserPass(token);
+    const { loginMail, loginPass } = accJson.getData(["loginMail", "loginPass"]);
+    const isValidToken = validateAdminUser(inputCreds, { user: loginMail, pass: loginPass });
 
     if (event.path.startsWith("/api/") && !event.path.startsWith("/api/_") && !isValidToken) {
       return event.errorResponse(new Error("Unauthorized"), 401);

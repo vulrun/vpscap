@@ -46,8 +46,8 @@ const controllers = {
 
     accJson.setData({
       homeUrl: `${getRequestProtocol(event)}://${headers?.host}`,
-      hostName: Hostname,
       publicIp: Public_IP,
+      systemHost: Hostname,
     });
 
     const private_ips = cleanUniqArray(Private_IP1.split(/\s/), Private_IP2.split(/\s/)).filter((ip) => !ipv6Regex.test(ip));

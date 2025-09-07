@@ -84,11 +84,11 @@ const controllers = {
   },
 
   async sendSmtpTestEmail(req) {
-    const { username, vpsUser } = accJson.getData(["username", "vpsUser"]);
+    const { loginMail, systemUser, systemHost } = accJson.getData(["loginMail", "systemUser", "systemHost"]);
     const sentInfo = await sendEmailNow({
-      to: username,
+      to: loginMail,
       subject: "SMTP Test Email",
-      body: `This is a test email sent from VPS server (${vpsUser}).`,
+      body: `This is a test email sent from VPS server (${systemUser}@${systemHost}).`,
     });
 
     const smtpTestStatus = {

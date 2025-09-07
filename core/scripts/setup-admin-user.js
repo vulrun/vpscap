@@ -190,7 +190,7 @@ async function setupAdminUser() {
 
   // setup .env variables
   const currentEnvObj = extendObj({
-    NITRO_PORT: accountObj?.port,
+    NITRO_PORT: accountObj?.appPort,
     APP_ENV: accountObj?.appEnv,
     NUXT_PUBLIC_APP_ENV: accountObj?.appEnv,
   });

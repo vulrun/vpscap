@@ -18,13 +18,13 @@ export default class WebSites {
     const accountJson = new AccountJson();
     const accObj = accountJson.getData("*");
 
-    if (!accObj?.vpsUser) {
+    if (!accObj?.systemUser) {
       console.log("Please setup admin user first");
       process.exit();
     }
 
     this.sslMeta = new SslMeta();
-    this.sslAcme = new SslAcme({ webSites: this, email: accObj?.username });
+    this.sslAcme = new SslAcme({ webSites: this, email: accObj?.loginMail });
     this.nginx = new NginxHandler({ webSites: this });
     this.nginxReload = debounce(() => this.nginx.reload(), 1000);
     this.confDirPath = fsPath.resolve(accObj?.localDir, "sites.conf.d");

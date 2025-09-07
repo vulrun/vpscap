@@ -10,7 +10,7 @@ export default eventHandler(async (event) => {
   try {
     const accJson = new AccountJson();
     const accObj = accJson.getData("*");
-    if (!accObj.vpsUser) throw new Error("Please setup admin user first");
+    if (!accObj.systemUser) throw new Error("Please setup admin user first");
 
     const deps = {};
     deps.install_nginx = await isInstalled("nginx");
@@ -26,10 +26,10 @@ export default eventHandler(async (event) => {
     resp.appEnv = runtimeConfig?.appEnv;
     resp.version = packageJson?.version;
     resp.profile = {
-      name: accObj?.vpsUser,
-      email: accObj?.username,
-      avatar: getGravatarUrl(accObj?.username),
-      homeUrl: accObj?.homeUrl,
+      name: accObj?.systemUser,
+      email: accObj?.loginMail,
+      avatar: getGravatarUrl(accObj?.systemUser),
+      homeUrl: accObj?.systemHost,
     };
     resp.prerequisite = deps;
 

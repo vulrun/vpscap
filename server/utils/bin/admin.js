@@ -5,10 +5,10 @@ export const hashPassword = (password) => bcrypt.hashSync(password, BCRYPT_HASH_
 export const comparePassword = (password, hash) => bcrypt.compareSync(password, hash);
 
 export const validateAdminUser = (inps, envs) => {
-  if (inps?.username !== envs?.username) throw new Error("User is invalid");
+  if (inps?.user !== envs?.user) throw new Error("Invalid User");
 
-  const isPasswordCorrect = comparePassword(inps?.password, envs?.password);
-  if (!isPasswordCorrect) throw new Error("Password is incorrect");
+  const isPasswordCorrect = comparePassword(inps?.pass, envs?.pass);
+  if (!isPasswordCorrect) throw new Error("Incorrect Password");
 
   return true;
 };

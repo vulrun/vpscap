@@ -2,28 +2,23 @@
 import { toast } from "vue-sonner";
 import { z } from "zod";
 
-const bgClass = ref("bg-gray-800");
 const LoginSchema = z.object({
-  username: z.string().describe("username"),
-  password: z.string().describe("password"),
+  user: z.string().describe("Login Email"),
+  pass: z.string().describe("Login Password"),
 });
 
 const loginFieldConfig = {
-  username: {
-    inputProps: {
-      type: "test",
-    },
+  user: {
+    inputProps: { type: "test" },
   },
-  password: {
-    inputProps: {
-      type: "password",
-    },
+  pass: {
+    inputProps: { type: "password" },
   },
 };
 
 async function onSubmit(form) {
   try {
-    $persist("WebAppToken", encodeUserPass(form?.username, form?.password));
+    $persist("WebAppToken", encodeUserPass(form?.user, form?.pass));
     const data = await useApi("/api/verify");
     $persist("WebAppData", data);
     navigateTo("/home");

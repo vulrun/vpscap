@@ -189,7 +189,7 @@ export async function runCronJobTask(jobSlug, runForcefully) {
 
       const subject = `[Action Required] SSL Certificates expiring soon` + (!riskyCount ? "" : ` (${riskyCount})`);
       const heading = `SSL Certificate Expiry Alert`;
-      const serverName = `${accObj.vpsUser}@${accObj.hostName}`;
+      const serverName = `${accObj.systemUser}@${accObj.systemHost}`;
       const generatedAt = new Date().toISOString().split(".")[0].replace("T", " ");
       const dashboardUrl = `${accObj?.homeUrl}/#settings`;
       const unsubscribeUrl = `${accObj?.homeUrl}/#settings/notifications`;
@@ -215,7 +215,7 @@ export async function runCronJobTask(jobSlug, runForcefully) {
       });
 
       const sentInfo = await sendEmailNow({
-        to: accObj?.username,
+        to: accObj?.loginMail,
         subject,
         body: html,
       });
@@ -232,7 +232,7 @@ export async function runCronJobTask(jobSlug, runForcefully) {
 
       const subject = `[Action Required] Monitored Certificates expiring soon` + (!riskyCount ? "" : ` (${riskyCount})`);
       const heading = `Monitored Certificate Expiry Alert`;
-      const serverName = `${accObj.vpsUser}@${accObj.hostName}`;
+      const serverName = `${accObj.systemUser}@${accObj.systemHost}`;
       const generatedAt = new Date().toISOString().split(".")[0].replace("T", " ");
       const dashboardUrl = `${accObj?.homeUrl}/#settings`;
       const unsubscribeUrl = `${accObj?.homeUrl}/#settings/notifications`;
@@ -258,7 +258,7 @@ export async function runCronJobTask(jobSlug, runForcefully) {
       });
 
       const sentInfo = await sendEmailNow({
-        to: accObj?.username,
+        to: accObj?.loginMail,
         subject,
         body: html,
       });
