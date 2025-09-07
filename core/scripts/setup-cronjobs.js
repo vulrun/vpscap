@@ -8,16 +8,15 @@ const CRON_TAG_END = "###_END_VPSCAP_CRONJOBS_###";
 
 (async () => {
   try {
-    await setupCronJobs();
+    const { accountObj } = lookupAccountJs();
+    await setupCronJobs({ accountObj });
   } catch (err) {
     console.error("❌ Error, setting up cron-jobs:", err?.message);
   }
 })();
 
-async function setupCronJobs() {
-  const { accountObj } = lookupAccountJs();
-
-  const cronBlock = getCronBlock(accountObj?.port, accountObj?.localDir);
+async function setupCronJobs({ accountObj }) {
+  const cronBlock = getCronBlock(accountObj?.appPort, accountObj?.localDir);
   if (!cronBlock) throw new Error(`please setup admin user first.`);
 
   try {
@@ -25,8 +24,8 @@ async function setupCronJobs() {
     const currentCron = await readCrontab();
 
     // remove existing vpscap-cron block
-    const regex = new RegExp(`${CRON_TAG_START}[\\s\\S]*?${CRON_TAG_END}`, "g");
-    const cleanedCron = currentCron.replace(regex, "").trim();
+    const cronRegex = new RegExp(`${CRON_TAG_START}[\\s\\S]*?${CRON_TAG_END}`, "g");
+    const cleanedCron = currentCron.replace(cronRegex, "").trim();
 
     // combine with new block
     const updatedCron = [cleanedCron, cronBlock].filter(Boolean).join("\n\n");

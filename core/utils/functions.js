@@ -135,12 +135,17 @@ function lookupAccountJs() {
   const vpscapRootPath = locatePath.nearestDirPath(".git/config");
   const vpscapLocalPath = fsPath.resolve(vpscapRootPath, ".localdb");
   const accountFilePath = fsPath.resolve(vpscapRootPath, ".localdb", "account.json");
-  let accountObj = fs.readJsonSync(accountFilePath, { throws: false });
+
+  // touching dir and files
+  fs.ensureDirSync(vpscapLocalPath);
+  fs.ensureFileSync(accountFilePath);
+
+  let accountObj = fs.readJsonSync(accountFilePath, { throws: false }) || {};
   let currEnvObj = env.getData(vpscapRootPath);
 
   // fix-dotenv
   extendObj(currEnvObj, {
-    NITRO_PORT: accountObj?.port,
+    NITRO_PORT: accountObj?.appPort,
     APP_ENV: accountObj?.appEnv,
     NUXT_PUBLIC_APP_ENV: accountObj?.appEnv,
   });
@@ -148,7 +153,6 @@ function lookupAccountJs() {
   extendObj(accountObj, {
     rootPath: vpscapRootPath,
     localDir: vpscapLocalPath,
-    filePath: accountFilePath,
   });
 
   env.setData(currEnvObj, vpscapRootPath);
@@ -156,8 +160,20 @@ function lookupAccountJs() {
 
   // read-account-json
   accountObj = fs.readJsonSync(accountFilePath, { throws: false });
-  if (!accountObj?.vpsUser) throw new Error("Account configuration are missing, please setup admin user first");
-  if (!accountObj?.password) throw new Error("Account configuration are missing, please setup admin user first");
+  // console.log("🚀 ~ lookupAccountJs ~ accountObj:", accountObj);
+  // if (
+  //   !(
+  //     accountObj?.appVersion &&
+  //     accountObj?.systemUser &&
+  //     accountObj?.systemHost &&
+  //     accountObj?.loginMail &&
+  //     accountObj?.loginPass &&
+  //     //
+  //     accountObj?.appEnv
+  //   )
+  // ) {
+  //   throw new Error("Account configuration are missing, please setup admin user first");
+  // }
 
   return {
     accountObj,

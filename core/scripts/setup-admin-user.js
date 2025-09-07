@@ -28,6 +28,7 @@ let tempOtpMem;
 
 (async () => {
   try {
+    pushCoreLogs(`OTP sent successfully to`);
     await setupAdminUser();
   } catch (err) {
     console.error("❌ Error, setting up admin-user:", err?.message);
@@ -53,17 +54,10 @@ async function setupAdminUser() {
   fs.ensureFileSync(accountFilePath);
 
   // setup usernames
-  const currentUserName = os.userInfo().username;
-  let vpscapUserName = "" + currentUserName;
-  if (!USER_REGEX.test(currentUserName)) {
-    vpscapUserName += Math.random().toString().substring(2, 6);
-  }
-
-  // setup app-versions
-  let vpscapUserAgent = "vpscap";
-  if (mainPackageJson?.version) {
-    vpscapUserAgent += "/" + mainPackageJson?.version;
-  }
+  const systemHost = os.hostname();
+  const systemUser = os.userInfo().username;
+  const appVersion = ["vpscap", mainPackageJson?.version].filter(Boolean).join("/");
+  // const ok_username = [os_username, USER_REGEX.test(os_username) ? null : Math.random().toString().substring(2, 6)].filter(Boolean).join("");
 
   // terminal prints
   console.log(
@@ -74,18 +68,26 @@ async function setupAdminUser() {
     styledText(vpscapLocalPath)
   );
   console.log(
+    //
     styledText("✔", LOG_COLORS.BOLD),
-    styledText("User  Selected", LOG_COLORS.BOLD),
+    styledText("Server Hostname", LOG_COLORS.BOLD),
     ARROW_SEPRATOR,
-    styledText(vpscapUserName, LOG_COLORS.UNDERLINE),
-    vpscapUserName === currentUserName ? styledText(`(username adheres to policy)`, LOG_COLORS.DIM) : styledText(`(new username set as per policy)`, LOG_COLORS.DIM)
+    styledText(systemHost, LOG_COLORS.UNDERLINE)
+    // styledText(`(can be set later)`, LOG_COLORS.DIM)
+  );
+  console.log(
+    styledText("✔", LOG_COLORS.BOLD),
+    styledText("Server Username", LOG_COLORS.BOLD),
+    ARROW_SEPRATOR,
+    styledText(systemUser, LOG_COLORS.UNDERLINE)
+    // os_username === ok_username ? styledText(`(username adheres to policy)`, LOG_COLORS.DIM) : styledText(`(new username set as per policy)`, LOG_COLORS.DIM)
   );
   console.log(
     //
     styledText("✔", LOG_COLORS.BOLD),
     styledText("VPSCAP Version", LOG_COLORS.BOLD),
     ARROW_SEPRATOR,
-    styledText(vpscapUserAgent, LOG_COLORS.CYAN)
+    styledText(appVersion, LOG_COLORS.CYAN)
   );
 
   // preparing prompts
@@ -105,7 +107,7 @@ async function setupAdminUser() {
   });
   promptQuestions.push({
     type: "text",
-    name: "username",
+    name: "loginMail",
     message: "Login Email",
     validate: (value) => {
       value = trimStr(value);
@@ -115,9 +117,9 @@ async function setupAdminUser() {
       }
 
       tempOtpMem = Math.random().toString().substring(2, 8);
-      const headers = { Authorization: `Bearer ${process.env.VPSCAP_SEND_CODE_API_KEY}`, "User-Agent": vpscapUserAgent };
+      const headers = { Authorization: `Bearer ${process.env.VPSCAP_SEND_CODE_API_KEY}`, "User-Agent": appVersion };
       axios
-        .post(VPSCAP_SEND_CODE_API_URL, { toEmail: value, code: tempOtpMem, userAgent: vpscapUserAgent, currentUserName, vpscapUserName }, { headers })
+        .post(VPSCAP_SEND_CODE_API_URL, { toEmail: value, code: tempOtpMem, appVersion, systemUser, systemHost }, { headers })
         .then((resp) => pushCoreLogs(`OTP sent successfully to ${value}`))
         .catch((err) => pushCoreLogs(`Failed to send otp code, ${err?.message || ""}`));
 
@@ -140,7 +142,7 @@ async function setupAdminUser() {
   });
   promptQuestions.push({
     type: "password",
-    name: "password",
+    name: "loginPass",
     message: "Login Password",
     validate: (value) => {
       value = trimStr(value);
@@ -170,27 +172,30 @@ async function setupAdminUser() {
   }
 
   // setup account.json
-  const accountObj = fs.readJsonSync(mainPackagePath, { throws: false }) || {};
+  const accountObj = fs.readJsonSync(accountFilePath, { throws: false }) || {};
   extendObj(accountObj, {
-    port: response?.port,
     appEnv: "production",
-    vpsUser: vpscapUserName,
-    username: response?.username,
-    password: admin.hashPassword(response?.password),
+    appPort: response?.port,
+    homeUrl: `localhost:${response?.port}`,
+    appVersion,
+    systemUser,
+    systemHost,
+    loginMail: response?.loginMail,
+    loginPass: admin.hashPassword(response?.loginPass),
     rootPath: vpscapRootPath,
     localDir: vpscapLocalPath,
-    filePath: accountFilePath,
+    publicIp: "",
     otp: undefined,
   });
 
   // setup .env variables
-  const currentEnvObject = extendObj({
+  const currentEnvObj = extendObj({
     NITRO_PORT: accountObj?.port,
     APP_ENV: accountObj?.appEnv,
     NUXT_PUBLIC_APP_ENV: accountObj?.appEnv,
   });
 
-  env.setData(currentEnvObject, vpscapRootPath);
+  env.setData(currentEnvObj, vpscapRootPath);
   fs.writeJsonSync(accountFilePath, accountObj, { spaces: "  " });
 
   console.log(

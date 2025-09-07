@@ -8,8 +8,8 @@ const CONF_VPSCAP_NOTE = "\n###_MODIFIED_BY_VPSCAP_###\n\n";
 
 (async () => {
   try {
-    const { vpscapRootPath, accountObj } = lookupAccountJs();
-    await updateNginxConf({ vpscapRootPath, accountObj });
+    const { accountObj } = lookupAccountJs();
+    await updateNginxConf({ accountObj });
     await someMoreTweaks();
   } catch (err) {
     console.error("❌ Error, setting vps configuration:", err?.message);
@@ -51,7 +51,7 @@ async function updateNginxConf({ accountObj }) {
       "http.include": undefined,
     },
     {
-      user: accountObj?.vpsUser,
+      user: accountObj?.systemUser,
       "http.include": [
         //
         `/etc/nginx/conf.d/*.conf`,
