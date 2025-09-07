@@ -7,34 +7,9 @@ import nodemailer from "nodemailer";
 import Handlebars from "handlebars";
 import JsonDbExtended from "./JsonDbExtended";
 
-// import { sha256 as SHA256 } from "@noble/hashes/sha256";
 import VpsCertMeta from "@@/server/utils/vps/SslMeta";
 import VpsWebSites from "@@/server/utils/vps/WebSites";
 import AccountJson from "@@/server/utils/vps/AccountJson";
-
-export function fetchApi(...args) {
-  return axios
-    .create()(...args)
-    .then((res) => res?.data)
-    .catch((err) => err);
-}
-
-// export function sha256(str) {
-//   str = typeof str === "string" ? str : JSON.stringify(str);
-//   return toHex(SHA256(str));
-// }
-
-// export const readFile = (filePath) => {
-//   const cwd = process.cwd();
-//   filePath = filePath.replace(/^[@~]/, cwd);
-//   filePath = fsPath.resolve(filePath);
-
-//   if (!fs.existsSync(filePath)) {
-//     fs.closeSync(fs.openSync(filePath, "w"));
-//   }
-
-//   return fs.readFileSync(filePath, "utf-8");
-// };
 
 export function base64UrlEncode(input, encoding) {
   // input type to buffer
@@ -91,6 +66,13 @@ export function localdb(fileName, dataKey) {
   return new JsonDbExtended({ dbFolder: ".localdb", dbName: fileName, dataKey });
 }
 
+export function fetchApi(...args) {
+  return axios
+    .create()(...args)
+    .then((res) => res?.data)
+    .catch((err) => err);
+}
+
 export async function sendEmailNow({ to, subject, body }) {
   try {
     if (!to) throw new Error("`to` is missing for sendEmailNow.");
@@ -113,7 +95,7 @@ export async function sendEmailNow({ to, subject, body }) {
       "List-Help": `<mailto:${config?.smtpFrom}?subject=NEED-HELP>`,
       "List-Unsubscribe": `<mailto:${config?.smtpFrom}?subject=UNSUBSCRIBE>`,
     };
-    if (body.startsWith(`<!DOCTYPE`) || body.startsWith(`<html`)) {
+    if (body.toLowerCase().startsWith(`<!doctype`) || body.toLowerCase().startsWith(`<html`)) {
       mailOptions.html = body;
     } else {
       mailOptions.text = body;
@@ -159,7 +141,7 @@ export async function getAlertsHtml(context) {
     removeEmptyAttributes: true,
     minifyCSS: true, // Inline CSS gets minified
     minifyJS: true, // Inline JS gets minified (if any, rare in emails)
-    useShortDoctype: true,
+    // useShortDoctype: true,
     keepClosingSlash: true, // Important for self-closing tags in XHTML
     removeAttributeQuotes: false, // Keep quotes for better email client compatibility
   });

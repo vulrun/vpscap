@@ -1,6 +1,5 @@
 <script setup>
 import { toast } from "vue-sonner";
-import { TrashIcon, Loader2Icon } from "lucide-vue-next";
 defineOptions({ inheritAttrs: false });
 
 const props = defineProps(["class", "actionPayload", "action", "disabled", "asChild"]);

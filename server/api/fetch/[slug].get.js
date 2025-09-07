@@ -37,23 +37,23 @@ const controllers = {
   async serverInfo({ event, headers }) {
     const [Hostname, FQDNs, Public_IP, Private_IP1, Private_IP2] = await Promise.all([
       //
-      sudoExec("hostname"),
+      os.hostname() || sudoExec("hostname"),
       sudoExec("hostname -A"),
-      process?.env?.APP_ENV?.startsWith("dev") ? sudoExec("hostname -i") : sudoExec("wget -qO- https://api.ipify.org"),
+      process?.env?.APP_ENV?.startsWith("dev") ? sudoExec("hostname -i") : fetchApi(`https://api.ipify.org`),
       sudoExec("hostname -i"),
       sudoExec("hostname -I"),
     ]);
 
-    const protocol = getRequestProtocol(event);
     accJson.setData({
-      homeUrl: `${protocol}://${headers?.host}`,
-      hostName: os.hostname(),
+      homeUrl: `${getRequestProtocol(event)}://${headers?.host}`,
+      hostName: Hostname,
+      publicIp: Public_IP,
     });
 
     const private_ips = cleanUniqArray(Private_IP1.split(/\s/), Private_IP2.split(/\s/)).filter((ip) => !ipv6Regex.test(ip));
     return [
       //
-      { label: "Hostname", value: os.hostname() },
+      { label: "Hostname", value: Hostname },
       { label: "FQDNs", value: cleanUniqArray(FQDNs.split(/\s/)).join(`&nbsp;&bull;&nbsp;`) },
       { label: "Public IP", value: Public_IP },
       { label: "Private IP", value: private_ips.join(`&nbsp;&bull;&nbsp;`) },

@@ -1,5 +1,7 @@
 <script setup>
+defineOptions({ inheritAttrs: false });
 import { RefreshCwIcon, TrashIcon, Loader2Icon } from "lucide-vue-next";
+
 const { row, viewMode } = defineProps(["row", "viewMode"]);
 const emits = defineEmits(["update:list"]);
 const isMonitored = computed(() => viewMode.value === "monitor");

@@ -1,19 +1,11 @@
-<script setup lang="ts">
-import type { Table } from "@tanstack/vue-table";
-import type { Task } from "~/.experiments/data/schema";
+<script setup>
 import { Button } from "@/components/ui/button";
-
 import { Input } from "@/components/ui/input";
 import { EllipsisIcon } from "lucide-vue-next";
 import { computed } from "vue";
 import { priorities, statuses } from "~/.experiments/data/data";
 
-interface DataTableToolbarProps {
-  table: Table<Task>;
-}
-
-const props = defineProps<DataTableToolbarProps>();
-
+const props = defineProps(["table"]);
 const isFiltered = computed(() => props.table.getState().columnFilters.length > 0);
 </script>
 
@@ -22,7 +14,7 @@ const isFiltered = computed(() => props.table.getState().columnFilters.length > 
     <div class="flex flex-1 items-center space-x-2">
       <Input
         placeholder="Filter tasks..."
-        :model-value="(table.getColumn('title')?.getFilterValue() as string) ?? ''"
+        :model-value="table.getColumn('title')?.getFilterValue() ?? ''"
         class="h-8 w-[150px] lg:w-[250px]"
         @input="table.getColumn('title')?.setFilterValue($event.target.value)"
       />

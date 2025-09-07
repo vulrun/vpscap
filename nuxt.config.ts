@@ -34,15 +34,6 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     appEnv: process?.env?.APP_ENV || "production",
-    loginUsername: "",
-    loginPassword: "",
-    // homeURL: "",
-    // apiAuthToken: "",
-    // linkCacheTtl: 60,
-    // caseSensitive: false,
-    // redirectWithQuery: false,
-    // redirectStatusCode: "307",
-    // mysqlUrl: "",
     public: {
       appEnv: process?.env?.APP_ENV || "production",
     },

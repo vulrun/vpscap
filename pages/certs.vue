@@ -12,15 +12,6 @@ import CertsRowAction from "@/components/Certs/RowAction.vue";
 const viewMode = useLocalRef("certs-view-mode", "monitor");
 const setViewMode = (value) => (viewMode.value = value === "install" ? "install" : "monitor");
 
-// const router = useRouter();
-// const route = useRoute();
-onMounted(() => {
-  // remove all query parameters after 2secs
-  // setTimeout(() => router.push({ ...route, query: null }), 2000);
-  // act on query value
-  // if (route?.query?.install) return setViewMode("install");
-  // if (route?.query?.monitor) return setViewMode("monitor");
-});
 const monitoredCerts = useApiFetch(`/api/fetch/monitoredCerts`);
 const monitoredCertsCachedAt = computed(() => (monitoredCerts?.isLoading?.value ? null : monitoredCerts?.result?.value?.cachedAt));
 const monitoredCols = [
@@ -32,7 +23,7 @@ const monitoredCols = [
   {
     accessorKey: "subject_names",
     header: ({ column }) => h(DataTableColumnHeader, { column, title: "Subject Names" }),
-    cell: ({ row }) => h(CertsRowDomain, { row, class: "text-gray-500 text-sm fonts-mono-inconsolata", domains: cleanArray(row?.original?.subject_names) }),
+    cell: ({ row }) => h(CertsRowDomain, { class: "vstack text-gray-500 text-sm fonts-mono-inconsolata max-w-[240px] max-h-[120px]", domains: cleanArray(row?.original?.subject_names) }),
   },
   {
     accessorKey: "issuer",
@@ -62,12 +53,12 @@ const installedCols = [
   {
     accessorKey: "domain",
     header: ({ column }) => h(DataTableColumnHeader, { column, title: "Domain" }),
-    cell: ({ row }) => h(CertsRowDomain, { row, class: "", domains: cleanArray(row?.original?.domain) }),
+    cell: ({ row }) => h(CertsRowDomain, { class: "", domains: cleanArray(row?.original?.domain) }),
   },
   {
     accessorKey: "altNames",
     header: ({ column }) => h(DataTableColumnHeader, { column, title: "Subject Names" }),
-    cell: ({ row }) => h(CertsRowDomain, { row, class: "text-gray-500 text-sm fonts-mono-inconsolata", domains: cleanArray(row?.original?.altNames) }),
+    cell: ({ row }) => h(CertsRowDomain, { class: "vstack text-gray-500 text-sm fonts-mono-inconsolata max-w-[240px] max-h-[120px]", domains: cleanArray(row?.original?.altNames) }),
   },
   {
     accessorKey: "issuer",

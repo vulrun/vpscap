@@ -1,4 +1,5 @@
 <script setup>
+defineOptions({ inheritAttrs: false });
 import { CloudOffIcon, CloudAlertIcon, CloudFogIcon, LeafyGreenIcon } from "lucide-vue-next";
 
 const props = defineProps(["row", "class"]);
