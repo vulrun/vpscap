@@ -255,8 +255,12 @@ export default class NginxHandler {
     if (obj?.confType === "proxy") {
       return {
         proxy_pass: obj?.target,
+        proxy_http_version: "1.1",
         proxy_set_header: [
           // proxy headers
+          "Host $host",
+          "Upgrade $http_upgrade",
+          "Connection 'upgrade'",
           "X-Real-IP $remote_addr",
           "X-Forwarded-For $proxy_add_x_forwarded_for",
           "X-Forwarded-Proto $scheme",
