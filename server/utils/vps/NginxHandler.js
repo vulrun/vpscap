@@ -151,30 +151,38 @@ export default class NginxHandler {
     obj.domain = obj?.domain?.join();
 
     // preparing root location
-    const locations = {};
-    locations.root = { "location /": await this.#buildConfRootLocation(obj) };
-    if (!locations?.root) throw new Error("Error generting configuration file");
+    const phpFpmSocket = this.findPhpSocket();
+    const rootLocation = await this.#buildConfRootLocation(obj);
+    if (!rootLocation) throw new Error("Error generting configuration file");
 
-    // preparing other locations
+    const locations = {};
+    locations.root = { "location /": rootLocation };
     locations.acmeChallenges = {
       "location /.well-known/acme-challenge/": {
         alias: this.#challengesPath + "/",
       },
     };
-    locations.forceSSL = { "location /": { return: "301 https://$host$request_uri" } };
-    locations.htaccessDeny = { "location ~ /.ht": { deny: "all" } };
+    locations.forceSSL = {
+      "location /": {
+        return: "301 https://$host$request_uri",
+      },
+    };
+    locations.htaccessDeny = {
+      "location ~ /.ht": {
+        deny: "all",
+      },
+    };
     locations.phpPlain = {
-      "location ~ .php$": {
+      "location ~ \\.php$": {
         default_type: "text/plain",
         try_files: "$uri $uri/ =404",
         root: obj?.target,
       },
     };
     locations.phpFpm = {
-      "location ~ .php$": {
-        include: ["snippets/fastcgi-php.conf", "fastcgi_params"],
-        fastcgi_pass: "unix:/var/run/php/php7.4-fpm.sock",
-        fastcgi_param: "SCRIPT_FILENAME $document_root$fastcgi_script_name",
+      "location ~ \\.php$": {
+        include: "snippets/fastcgi-php.conf",
+        fastcgi_pass: `unix:${phpFpmSocket}`,
       },
     };
 
@@ -183,13 +191,15 @@ export default class NginxHandler {
     server80.listen = [`80 ${portSuffix}`.trim(), `[::]:80 ${portSuffix}`.trim()];
     server80.server_name = isDefaultConf ? "_" : obj?.domain;
     server80.error_page = ["404 /404.html", "500 502 503 504 /50x.html"];
-    Object.assign(server80, locations?.acmeChallenges);
     if (obj?.forceSSL && obj?.enableSSL) {
+      Object.assign(server80, locations?.acmeChallenges);
       Object.assign(server80, locations?.forceSSL);
     } else {
+      if (obj?.confType === "serve") Object.assign(server80, { root: obj?.target });
+      Object.assign(server80, locations?.acmeChallenges);
       Object.assign(server80, locations?.root);
-      // if (obj?.confType === "serve") Object.assign(server80, locations?.phpPlain);
       if (obj?.confType === "serve") Object.assign(server80, locations?.htaccessDeny);
+      if (obj?.confType === "serve" && phpFpmSocket) Object.assign(server80, locations?.phpFpm);
     }
 
     // setting server conf blocks for port 443
@@ -207,10 +217,10 @@ export default class NginxHandler {
       server443.listen = [`443 ssl ${portSuffix}`.trim(), `[::]:443 ssl ${portSuffix}`.trim()];
       server443.server_name = isDefaultConf ? "_" : obj?.domain;
       server443.error_page = ["404 /404.html", "500 502 503 504 /50x.html"];
-      Object.assign(server80, locations?.acmeChallenges);
+      if (obj?.confType === "serve") Object.assign(server443, { root: obj?.target });
       Object.assign(server443, locations?.root);
-      // if (obj?.confType === "serve") Object.assign(server443, locations?.phpPlain);
       if (obj?.confType === "serve") Object.assign(server443, locations?.htaccessDeny);
+      if (obj?.confType === "serve" && phpFpmSocket) Object.assign(server443, locations?.phpFpm);
 
       if (sslCert?.certName && sslCert?.certPath && sslCert?.certKeyPath) {
         const sslPaths = this.webSites.getCertDirPaths();
@@ -241,7 +251,6 @@ export default class NginxHandler {
   async #buildConfRootLocation(obj) {
     if (obj?.confType === "serve") {
       return {
-        root: obj?.target,
         index: "index.html index.htm index.php index.nginx-debian.html",
         try_files: "$uri $uri/ =404",
         autoindex: obj?.enableIndexing ? "on" : "off",
@@ -279,6 +288,20 @@ export default class NginxHandler {
     if (location?.root || server?.root) return { confType: "serve", target: location?.root || server?.root };
 
     return null;
+  }
+
+  findPhpSocket() {
+    try {
+      const socketDir = "/var/run/php/";
+      const files = fs.readdirSync(socketDir);
+      // Look for files ending in -fpm.sock
+      const socket = files.find((file) => file.includes("fpm.sock"));
+      if (!socket) throw new Error("No PHP-FPM socket found.");
+
+      return fsPath.join(socketDir, socket);
+    } catch (err) {
+      return null;
+    }
   }
 
   async testConfs() {
