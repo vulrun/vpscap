@@ -1,3 +1,5 @@
+const isValidString = (str) => typeof str === "string" && str.length > 0;
+
 export default eventHandler((event) => {
   const runtimeConfig = useRuntimeConfig(event);
 
@@ -5,7 +7,7 @@ export default eventHandler((event) => {
     setResponseHeaders(event, { "Content-Type": "text/plain" });
     err ? setResponseStatus(event, 400, "ERROR") : setResponseStatus(event, 200, "OK");
 
-    const errorMessage = err?.message || err?.statusMessage || err?.statusText || "oops, something went wrong";
+    const errorMessage = isValidString(err) ? err : err?.message || err?.statusMessage || err?.statusText || "oops, something went wrong";
     const timestamp = new Date().toISOString().replace("T", " ").split(".")[0];
     return `[${timestamp}] ${err ? errorMessage : data}\n`;
   };
@@ -19,9 +21,11 @@ export default eventHandler((event) => {
   event.errorResponse = (err, statusCode, statusText) => {
     console.error(`[${new Date().toISOString()}] ${event.node.req.method || "GET"} ${getRequestURL(event).pathname}`, "🚀", err);
 
-    const errorMessage = err?.message || err?.statusMessage || err?.statusText || statusText || "oops, something went wrong";
+    const errorMessage = isValidString(err) ? err : err?.message || err?.statusMessage || err?.statusText || statusText || err || "oops, something went wrong";
     const statusMessage = err?.statusMessage || err?.statusText || statusText || "OOPS";
 
+    console.error(statusMessage, "~~~~~", errorMessage);
+    setResponseHeaders(event, { "Content-Type": "application/json" });
     setResponseStatus(event, err?.statusCode || statusCode || 400, cleanStatusText(statusMessage));
 
     if (runtimeConfig?.appEnv.startsWith("dev")) {

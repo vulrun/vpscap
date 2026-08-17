@@ -4,6 +4,7 @@ import lo from "lodash";
 import { z } from "zod";
 import shell from "@@/server/utils/shell";
 import NginxParser from "@@/server/utils/vps/NginxParser";
+import AccountJson from "@@/server/utils/vps/AccountJson";
 
 export default class NginxHandler {
   #challengesPath;
@@ -42,7 +43,6 @@ export default class NginxHandler {
       }
 
       case "proxy": {
-        if (isLocalIP) throw new Error("Localhost or Internal IP not allowed.");
         if (!isBindStr && !isValidUrl) throw new Error(`Invalid proxy target`);
 
         return true;
@@ -258,7 +258,7 @@ export default class NginxHandler {
     }
 
     if (obj?.confType === "redirect") {
-      return { rewrite: `^(.*)$ ${obj?.target}$1 redirect` };
+      return { rewrite: [`^/$ ${obj?.target} redirect`, `^/(.*)$ ${obj?.target}/$1 redirect`] };
     }
 
     if (obj?.confType === "proxy") {

@@ -1,6 +1,5 @@
 import fsPath from "node:path";
 import fs from "fs-extra";
-import dns from "node:dns/promises";
 import lo from "lodash";
 // import { z } from "zod";
 import shell from "@@/server/utils/shell";
@@ -167,7 +166,7 @@ export default class WebSites {
 
   async rebuildAll() {
     const sites = await this.list();
-    const promises = sites.map((site) => this.rebuild(site?.confId));
+    const promises = sites.filter((site) => site.isActive).map((site) => this.rebuild(site?.confId));
 
     await Promise.all(promises);
     await this.nginxReload();
@@ -204,7 +203,7 @@ export default class WebSites {
 
     if (!process?.env?.APP_ENV?.startsWith("dev")) {
       const dnsData = await this.#dnsIpLookup(args?.domain);
-      if (!dnsData?.status) throw new Error(`DNS A record for \`__**${args?.domain}**__\` must be pointed to \`**${dnsData?.vpsIp}**\` instead of \`**${dnsData?.dnsIp}\`**.`);
+      if (!dnsData?.status) throw `DNS A record for \`__**${args?.domain}**__\` must be pointed to \`**${dnsData?.vpsIp}**\` instead of \`**${[].concat(dnsData?.dnsIps).join(",")}\`**.`;
     }
 
     const result = await this.nginx.writeConf(args?.confPath, args);
@@ -230,19 +229,16 @@ export default class WebSites {
   async #dnsIpLookup(domain) {
     domain = sanitizeDomains(domain)?.[0];
 
-    const [vpsIp, dnsIp] = await Promise.all([
+    const [vpsIp, dnsIps] = await Promise.all([
       //
       fetchApi(`https://api.ipify.org`),
-      dns
-        .resolve4(domain)
-        .then((res) => cleanArray(res))
-        .catch((err) => []),
+      getTracedARecords(domain),
     ]);
 
     return {
       vpsIp,
-      dnsIp,
-      status: dnsIp.includes(vpsIp),
+      dnsIps,
+      status: dnsIps.includes(vpsIp),
       domain,
     };
   }
