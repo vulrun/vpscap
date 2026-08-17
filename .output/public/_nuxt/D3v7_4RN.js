@@ -1,0 +1,1 @@
+import{B as c,o as n,e as r,a as e,t as s,u as i}from"./DJMrDfbJ.js";const l={class:"vstack relative mb-8"},_={class:"text-2xl font-bold tracking-tight"},p={class:"text-muted-foreground"},m={__name:"MainHeading",props:["title","brief"],setup(o){const t=o,a=c();return(d,u)=>(n(),r("div",l,[e("h2",_,s(t?.title),1),e("p",p,s(i(a)||t?.brief),1)]))}};export{m as _};
